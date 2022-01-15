@@ -12,42 +12,71 @@ public class Parser {
     }
 
     public void parse() {
-        Response resp;
+        ParsePair pair;
         while (lines.hasNext()) {
-            resp = parseExpr(lines.next());
-            if (resp != null) {
-                System.out.println(resp.getNode().toString());
+            pair = parseExpr(lines.next());
+            if (pair != null) {
+                System.out.println(pair.getNode().toString());
             }
         }
     }
 
-    private Response parseExpr(String line) {
+    private ParsePair parseExpr(String line) {
         line = line.stripLeading();
         char first = line.charAt(0);
         String[] parts;
         ASTExpr node;
-        Response resp;
+        ParsePair pair;
 
         if (Character.isDigit(first)) {
             parts = parseInt(line);
             node = new IntegerExpr(parts[0]);
-            return new Response(node, parts[1]);
+            return new ParsePair(node, parts[1]);
         } else if (Character.isLetter(first)) {
             parts = parseVar(line);
-            node = new VariableExpr(parts[0]);
-            return new Response(node, parts[1]);
+            if (parts[0].equals("this")) {
+                node = new ThisExpr();
+            } else {
+                node = new VariableExpr(parts[0]);
+            }
+            return new ParsePair(node, parts[1]);
         } else if (first == '(') {
-            resp = parseExpr(line.substring(1));
-            ASTExpr expr1 = resp.getNode();
-            resp = parseExpr(resp.getLine());
-            ASTExpr op = resp.getNode();
-            resp = parseExpr(resp.getLine());
-            ASTExpr expr2 = resp.getNode();
+            pair = parseExpr(line.substring(1));
+            ASTExpr expr1 = pair.getNode();
+            pair = parseExpr(pair.getLine());
+            ASTExpr op = pair.getNode();
+            pair = parseExpr(pair.getLine());
+            ASTExpr expr2 = pair.getNode();
             node = new ArithExpr(op, expr1, expr2);
-            return new Response(node, resp.getLine().substring(1));
+            return new ParsePair(node, pair.getLine().substring(1));
         } else if (ops.contains(first)) {
             node = new OPExpr(first);
-            return new Response(node, line.substring(1));
+            return new ParsePair(node, line.substring(1));
+        } else if (first == '@') {
+            parts = parseVar(line.substring(1));
+            node = new ClassExpr(parts[0]);
+            return new ParsePair(node, parts[1]);
+        } else if (first == '^') {
+            pair = parseExpr(line.substring(1));
+            ASTExpr caller = pair.getNode();
+            parts = parseVar(pair.getLine().substring(1));
+            MethodExpr method = new MethodExpr(parts[0], caller);
+            String temp = parts[1].substring(1);
+            while (!temp.isEmpty() && pair.getLine().charAt(0) != ')') {
+                pair = parseExpr(temp);
+                method.addArg(pair.getNode());
+                if (pair.getLine().length() < 2) {
+                    break;
+                }
+                temp = pair.getLine().substring(1);
+            }
+            return new ParsePair(method, temp);
+        } else if (first == '&') {
+            pair = parseExpr(line.substring(1));
+            ASTExpr caller = pair.getNode();
+            parts = parseVar(pair.getLine().substring(1));
+            FieldExpr field = new FieldExpr(parts[0], caller);
+            return new ParsePair(field, parts[1]);
         }
         return null;
     }

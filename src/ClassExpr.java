@@ -7,6 +7,6 @@ public class ClassExpr extends ASTExpr {
 
     @Override
     public String toString() {
-        return name;
+        return "@" + name;
     }
 }

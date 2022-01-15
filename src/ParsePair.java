@@ -1,8 +1,8 @@
-public class Response {
+public class ParsePair {
     private ASTExpr node;
     private String line;
 
-    public Response(ASTExpr node, String restOfLine) {
+    public ParsePair(ASTExpr node, String restOfLine) {
         this.node = node;
         this.line = restOfLine;
     }

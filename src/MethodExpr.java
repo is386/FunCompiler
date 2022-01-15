@@ -3,7 +3,7 @@ import java.util.ArrayList;
 public class MethodExpr extends ASTExpr {
     private final String name;
     private final ASTExpr caller;
-    private ArrayList<ASTExpr> args;
+    private ArrayList<ASTExpr> args = new ArrayList<>();
 
     public MethodExpr(String name, ASTExpr caller) {
         this.name = name;
@@ -28,6 +28,10 @@ public class MethodExpr extends ASTExpr {
 
     @Override
     public String toString() {
-        return name;
+        String str = "^" + caller.toString() + "." + name + "(";
+        for (ASTExpr expr : args) {
+            str += expr.toString() + ", ";
+        }
+        return str.substring(0, str.length() - 2) + ")";
     }
 }
