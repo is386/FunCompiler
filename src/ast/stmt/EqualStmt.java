@@ -7,7 +7,7 @@ public class EqualStmt extends ASTStmt {
     private final ASTExpr expr;
 
     public EqualStmt(String var, ASTExpr expr) {
-        this.var = var;
+        this.var = var.isEmpty() ? "_" : var;
         this.expr = expr;
     }
 
