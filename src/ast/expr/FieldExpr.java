@@ -19,6 +19,6 @@ public class FieldExpr extends ASTExpr {
 
     @Override
     public String toString() {
-        return "&" + caller.toString() + "." + name;
+        return "&" + caller + "." + name;
     }
 }

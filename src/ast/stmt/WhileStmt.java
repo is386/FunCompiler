@@ -27,10 +27,10 @@ public class WhileStmt extends ASTStmt {
 
     @Override
     public String toString() {
-        String s = "while " + cond.toString() + ": {\n";
+        String s = "while " + cond + ": {\n";
         ;
         for (ASTStmt stmt : statements) {
-            s += stmt.toString() + "\n";
+            s += stmt + "\n";
         }
         s += "}";
         return s;

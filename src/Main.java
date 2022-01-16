@@ -1,6 +1,7 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import ast.Program;
 import parse.Parser;
 
 public class Main {
@@ -19,6 +20,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<String> source = parseInput();
         Parser parser = new Parser(source);
-        parser.parse();
+        Program prog = parser.parse();
+        System.out.println(prog);
     }
 }

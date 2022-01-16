@@ -38,19 +38,19 @@ public class IfStmt extends ASTStmt {
     public String toString() {
         String s = "";
         if (elseStatements.isEmpty()) {
-            s += "ifonly " + cond.toString() + ": {\n";
+            s += "ifonly " + cond + ": {\n";
         } else {
-            s += "if " + cond.toString() + ": {\n";
+            s += "if " + cond + ": {\n";
         }
 
         for (ASTStmt stmt : ifStatements) {
-            s += stmt.toString() + "\n";
+            s += stmt + "\n";
         }
 
         if (!elseStatements.isEmpty()) {
             s += "} else {\n";
             for (ASTStmt stmt : elseStatements) {
-                s += stmt.toString() + "\n";
+                s += stmt + "\n";
             }
         }
         s += "}";

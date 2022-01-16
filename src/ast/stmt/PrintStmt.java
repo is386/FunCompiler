@@ -14,6 +14,6 @@ public class PrintStmt extends ASTStmt {
     }
 
     public String toString() {
-        return "print(" + expr.toString() + ")";
+        return "print(" + expr + ")";
     }
 }

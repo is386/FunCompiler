@@ -27,6 +27,6 @@ public class UpdateStmt extends ASTStmt {
 
     @Override
     public String toString() {
-        return "!" + caller.toString() + "." + name + " = " + newVal.toString();
+        return "!" + caller + "." + name + " = " + newVal;
     }
 }

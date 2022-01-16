@@ -25,6 +25,6 @@ public class ArithExpr extends ASTExpr {
 
     @Override
     public String toString() {
-        return String.format("(%s %s %s)", expr1.toString(), op.toString(), expr2.toString());
+        return String.format("(%s %s %s)", expr1, op, expr2);
     }
 }

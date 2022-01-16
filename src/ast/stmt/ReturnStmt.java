@@ -14,6 +14,6 @@ public class ReturnStmt extends ASTStmt {
     }
 
     public String toString() {
-        return "return " + expr.toString();
+        return "return " + expr;
     }
 }

@@ -34,7 +34,7 @@ public class Program {
         if (!localVars.isEmpty()) {
             s += " with ";
             for (ASTExpr var : localVars) {
-                s += var.toString() + ", ";
+                s += var + ", ";
             }
             s = s.substring(0, s.length() - 2);
         }
@@ -42,7 +42,7 @@ public class Program {
         s += ":\n";
 
         for (ASTStmt stmt : statements) {
-            s += stmt.toString() + "\n\n";
+            s += stmt + "\n\n";
         }
 
         return s;

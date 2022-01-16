@@ -30,11 +30,11 @@ public class MethodExpr extends ASTExpr {
 
     @Override
     public String toString() {
-        String str = "^" + caller.toString() + "." + name + "(";
+        String str = "^" + caller + "." + name + "(";
 
         if (!args.isEmpty()) {
             for (ASTExpr expr : args) {
-                str += expr.toString() + ", ";
+                str += expr + ", ";
             }
             return str.substring(0, str.length() - 2) + ")";
         }

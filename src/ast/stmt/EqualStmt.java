@@ -21,7 +21,7 @@ public class EqualStmt extends ASTStmt {
 
     @Override
     public String toString() {
-        return var + " = " + expr.toString();
+        return var + " = " + expr;
     }
 
 }

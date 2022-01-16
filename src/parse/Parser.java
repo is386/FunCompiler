@@ -31,7 +31,7 @@ public class Parser {
         this.lines = source.iterator();
     }
 
-    public void parse() {
+    public Program parse() {
         String line;
         String mainLine = "";
         Program p = new Program();
@@ -48,7 +48,7 @@ public class Parser {
             p.addStatement(parseStmt(line));
         }
         parseProgram(p, mainLine);
-        System.out.println(p.toString());
+        return p;
     }
 
     private void parseProgram(Program p, String line) {
