@@ -6,6 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import ast.Program;
+import ast.decl.ClassDecl;
+import ast.decl.MethodDecl;
 import ast.expr.ASTExpr;
 import ast.expr.ArithExpr;
 import ast.expr.ClassExpr;
@@ -33,22 +35,61 @@ public class Parser {
 
     public Program parse() {
         String line;
-        String mainLine = "";
         Program p = new Program();
 
         while (lines.hasNext()) {
             line = lines.next();
             if (line.isEmpty()) {
                 continue;
+            } else if (line.startsWith("main")) {
+                parseProgram(p, line);
+            } else if (line.startsWith("class")) {
+                p.addClass(parseClassDecl(line));
+            } else {
+                p.addStatement(parseStmt(line));
             }
-            if (line.startsWith("main")) {
-                mainLine = line;
-                continue;
-            }
-            p.addStatement(parseStmt(line));
         }
-        parseProgram(p, mainLine);
+
         return p;
+    }
+
+    private ClassDecl parseClassDecl(String line) {
+        ParsePair pair;
+        String[] parts = line.split(" ");
+        String className = parts[1];
+        ClassDecl decl = new ClassDecl(className);
+
+        line = lines.next().stripLeading();
+        if (line.startsWith("fields")) {
+            line = line.replace("fields", "");
+            while (!line.isEmpty()) {
+                pair = parseVarExpr(line.substring(1));
+                decl.addField(pair.getNode());
+                line = pair.getLine();
+            }
+        }
+
+        MethodDecl methodDecl = null;
+        line = lines.next().stripLeading();
+        while (!line.equals("]")) {
+            if (line.startsWith("method")) {
+                line = className + "." + line.replace("method", "");
+                pair = parseMethodExpr(line);
+                methodDecl = new MethodDecl(pair.getNode());
+                line = pair.getLine().replace("with locals", "");
+                while (!line.isEmpty() && !line.equals(":")) {
+                    pair = parseVarExpr(line.substring(1));
+                    methodDecl.addVar(pair.getNode());
+                    line = pair.getLine();
+                }
+                decl.addMethod(methodDecl);
+            } else if (methodDecl != null) {
+                methodDecl.addStatement(parseStmt(line));
+            }
+            line = lines.next().stripLeading();
+        }
+
+        return decl;
     }
 
     private void parseProgram(Program p, String line) {

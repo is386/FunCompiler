@@ -1,17 +1,21 @@
-package ast;
+package ast.decl;
 
 import java.util.ArrayList;
 
-import ast.decl.ClassDecl;
 import ast.expr.ASTExpr;
 import ast.stmt.ASTStmt;
 
-public class Program {
+public class MethodDecl {
+    private final ASTExpr method;
     private ArrayList<ASTExpr> localVars = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
-    private ArrayList<ClassDecl> classes = new ArrayList<>();
 
-    public Program() {
+    public MethodDecl(ASTExpr method) {
+        this.method = method;
+    }
+
+    public ASTExpr getMethod() {
+        return method;
     }
 
     public void addVar(ASTExpr var) {
@@ -30,24 +34,10 @@ public class Program {
         return statements;
     }
 
-    public void addClass(ClassDecl c) {
-        classes.add(c);
-    }
-
-    public ArrayList<ClassDecl> getClasses() {
-        return classes;
-    }
-
     public String toString() {
-        String s = "";
-        for (ClassDecl c : classes) {
-            s += c;
-        }
-
-        s += "main";
+        String s = "method " + method.toString() + " with locals ";
 
         if (!localVars.isEmpty()) {
-            s += " with ";
             for (ASTExpr var : localVars) {
                 s += var + ", ";
             }
@@ -55,11 +45,10 @@ public class Program {
         }
 
         s += ":\n";
-
         for (ASTStmt stmt : statements) {
-            s += stmt + "\n\n";
+            s += stmt + "\n";
         }
 
-        return s;
+        return s + "\n";
     }
 }
