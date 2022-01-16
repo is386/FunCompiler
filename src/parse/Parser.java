@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
+import ast.Program;
 import ast.expr.ASTExpr;
 import ast.expr.ArithExpr;
 import ast.expr.ClassExpr;
@@ -31,16 +32,37 @@ public class Parser {
     }
 
     public void parse() {
-        ASTStmt s;
         String line;
+        String mainLine = "";
+        Program p = new Program();
+
         while (lines.hasNext()) {
             line = lines.next();
             if (line.isEmpty()) {
                 continue;
             }
-            s = parseStmt(line);
-            System.out.println(s.toString());
-            System.out.println();
+            if (line.startsWith("main")) {
+                mainLine = line;
+                continue;
+            }
+            p.addStatement(parseStmt(line));
+        }
+        parseProgram(p, mainLine);
+        System.out.println(p.toString());
+    }
+
+    private void parseProgram(Program p, String line) {
+        if (line.length() == 5) {
+            return;
+        }
+
+        ParsePair pair;
+        line = line.split("with")[1];
+
+        while (!line.equals(":")) {
+            pair = parseVarExpr(line.substring(1));
+            line = pair.getLine();
+            p.addVar(pair.getNode());
         }
     }
 
@@ -91,6 +113,7 @@ public class Parser {
     }
 
     private String[] parseInt(String line) {
+        line = line.stripLeading();
         String integer = "";
         char c;
         int i;
@@ -111,6 +134,7 @@ public class Parser {
     }
 
     private String[] parseVar(String line) {
+        line = line.stripLeading();
         String var = "";
         char c;
         int i;
@@ -131,12 +155,14 @@ public class Parser {
     }
 
     private ASTStmt parseEqualStmt(String var, String line) {
+        line = line.stripLeading();
         String[] parts = line.split("=", 2);
         ParsePair pair = parseExpr(parts[1]);
         return new EqualStmt(var, pair.getNode());
     }
 
     private ASTStmt parseUpdateStmt(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line.substring(1));
         ASTExpr caller = pair.getNode();
         String[] parts = parseVar(pair.getLine().substring(1));
@@ -147,6 +173,7 @@ public class Parser {
     }
 
     private ASTStmt parseIfStmt(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr cond = pair.getNode();
         IfStmt ifStmt = new IfStmt(cond);
@@ -167,6 +194,7 @@ public class Parser {
     }
 
     private ASTStmt parseIfOnlyStmt(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr cond = pair.getNode();
         IfStmt ifStmt = new IfStmt(cond);
@@ -181,6 +209,7 @@ public class Parser {
     }
 
     private ASTStmt parseWhileStmt(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr cond = pair.getNode();
         WhileStmt whileStmt = new WhileStmt(cond);
@@ -195,22 +224,26 @@ public class Parser {
     }
 
     private ASTStmt parseReturnStmt(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         return new ReturnStmt(pair.getNode());
     }
 
     private ASTStmt parsePrintStmt(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         return new PrintStmt(pair.getNode());
     }
 
     private ParsePair parseIntExpr(String line) {
+        line = line.stripLeading();
         String[] parts = parseInt(line);
         ASTExpr node = new IntegerExpr(parts[0]);
         return new ParsePair(node, parts[1]);
     }
 
     private ParsePair parseVarExpr(String line) {
+        line = line.stripLeading();
         String[] parts = parseVar(line);
         ASTExpr node;
 
@@ -224,6 +257,7 @@ public class Parser {
     }
 
     private ParsePair parseArithExpr(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr expr1 = pair.getNode();
         pair = parseExpr(pair.getLine());
@@ -235,13 +269,14 @@ public class Parser {
     }
 
     private ParsePair parseMethodExpr(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr caller = pair.getNode();
         String[] parts = parseVar(pair.getLine().substring(1));
         MethodExpr method = new MethodExpr(parts[0], caller);
         String temp = parts[1].substring(1);
 
-        while (!temp.isEmpty() && pair.getLine().charAt(0) != ')') {
+        while (!temp.isEmpty() && temp.charAt(0) != ')' && pair.getLine().charAt(0) != ')') {
             pair = parseExpr(temp);
             method.addArg(pair.getNode());
             if (pair.getLine().length() < 2) {
@@ -254,6 +289,7 @@ public class Parser {
     }
 
     private ParsePair parseFieldExpr(String line) {
+        line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr caller = pair.getNode();
         String[] parts = parseVar(pair.getLine().substring(1));
@@ -262,6 +298,7 @@ public class Parser {
     }
 
     private ParsePair parseClassExpr(String line) {
+        line = line.stripLeading();
         String[] parts = parseVar(line);
         ASTExpr node = new ClassExpr(parts[0]);
         return new ParsePair(node, parts[1]);
