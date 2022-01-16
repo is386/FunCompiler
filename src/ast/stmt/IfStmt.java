@@ -1,8 +1,8 @@
-package stmt;
+package ast.stmt;
 
 import java.util.ArrayList;
 
-import expr.ASTExpr;
+import ast.expr.ASTExpr;
 
 public class IfStmt extends ASTStmt {
 

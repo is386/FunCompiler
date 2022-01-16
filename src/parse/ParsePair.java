@@ -1,6 +1,6 @@
 package parse;
 
-import expr.ASTExpr;
+import ast.expr.ASTExpr;
 
 public class ParsePair {
     private ASTExpr node;

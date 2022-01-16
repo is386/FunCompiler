@@ -1,4 +1,4 @@
-package expr;
+package ast.expr;
 
 public class VariableExpr extends ASTExpr {
     private final String name;

@@ -1,4 +1,4 @@
-package expr;
+package ast.expr;
 
 public class IntegerExpr extends ASTExpr {
     private final int value;

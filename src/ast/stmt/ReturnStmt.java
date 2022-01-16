@@ -1,6 +1,6 @@
-package stmt;
+package ast.stmt;
 
-import expr.ASTExpr;
+import ast.expr.ASTExpr;
 
 public class ReturnStmt extends ASTStmt {
     private final ASTExpr expr;

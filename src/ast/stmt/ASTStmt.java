@@ -1,4 +1,4 @@
-package stmt;
+package ast.stmt;
 
 public abstract class ASTStmt {
 

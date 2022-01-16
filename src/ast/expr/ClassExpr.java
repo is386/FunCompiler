@@ -1,4 +1,4 @@
-package expr;
+package ast.expr;
 
 public class ClassExpr extends ASTExpr {
     private final String name;

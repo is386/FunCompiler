@@ -5,22 +5,22 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
-import expr.ASTExpr;
-import expr.ArithExpr;
-import expr.ClassExpr;
-import expr.FieldExpr;
-import expr.IntegerExpr;
-import expr.MethodExpr;
-import expr.OPExpr;
-import expr.ThisExpr;
-import expr.VariableExpr;
-import stmt.ASTStmt;
-import stmt.EqualStmt;
-import stmt.IfStmt;
-import stmt.PrintStmt;
-import stmt.ReturnStmt;
-import stmt.UpdateStmt;
-import stmt.WhileStmt;
+import ast.expr.ASTExpr;
+import ast.expr.ArithExpr;
+import ast.expr.ClassExpr;
+import ast.expr.FieldExpr;
+import ast.expr.IntegerExpr;
+import ast.expr.MethodExpr;
+import ast.expr.OPExpr;
+import ast.expr.ThisExpr;
+import ast.expr.VariableExpr;
+import ast.stmt.ASTStmt;
+import ast.stmt.EqualStmt;
+import ast.stmt.IfStmt;
+import ast.stmt.PrintStmt;
+import ast.stmt.ReturnStmt;
+import ast.stmt.UpdateStmt;
+import ast.stmt.WhileStmt;
 
 public class Parser {
     private final Iterator<String> lines;

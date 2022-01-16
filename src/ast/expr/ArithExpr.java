@@ -1,4 +1,4 @@
-package expr;
+package ast.expr;
 
 public class ArithExpr extends ASTExpr {
     private final ASTExpr op;
