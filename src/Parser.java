@@ -12,21 +12,101 @@ public class Parser {
     }
 
     public void parse() {
-        ParsePair pair;
+        ASTStmt s;
+        String line;
         while (lines.hasNext()) {
-            pair = parseExpr(lines.next());
-            if (pair != null) {
-                System.out.println(pair.getNode().toString());
+            line = lines.next();
+            if (line.isEmpty()) {
+                continue;
+            }
+            s = parseStmt(line);
+            if (s != null) {
+                System.out.println(s.toString());
+                System.out.println();
             }
         }
     }
 
-    private ParsePair parseExpr(String line) {
+    private ASTStmt parseStmt(String line) {
+        String[] parts;
+        ParsePair pair;
+
         line = line.stripLeading();
         char first = line.charAt(0);
+        if (first == '_') {
+            parts = line.split("=", 2);
+            pair = parseExpr(parts[1]);
+            return new EqualStmt("_", pair.getNode());
+        } else if (first == '!') {
+            pair = parseExpr(line.substring(1));
+            ASTExpr caller = pair.getNode();
+            parts = parseVar(pair.getLine().substring(1));
+            String field = parts[0];
+            pair = parseExpr(parts[1].substring(2));
+            ASTExpr newVal = pair.getNode();
+            return new UpdateStmt(caller, newVal, field);
+        }
+        parts = parseVar(line);
+        switch (parts[0]) {
+            case "print":
+                pair = parseExpr(parts[1]);
+                return new PrintStmt(pair.getNode());
+            case "return":
+                pair = parseExpr(parts[1]);
+                return new ReturnStmt(pair.getNode());
+            case "if": {
+                pair = parseExpr(parts[1]);
+                ASTExpr cond = pair.getNode();
+                IfStmt ifStmt = new IfStmt(cond);
+                line = lines.next();
+                while (!line.contains("else")) {
+                    ifStmt.addStatementToIf(parseStmt(line));
+                    line = lines.next();
+                }
+                line = lines.next();
+                while (!line.strip().equals("}")) {
+                    ifStmt.addStatementToElse(parseStmt(line));
+                    line = lines.next();
+                }
+                return ifStmt;
+            }
+            case "ifonly": {
+                pair = parseExpr(parts[1]);
+                ASTExpr cond = pair.getNode();
+                IfStmt ifStmt = new IfStmt(cond);
+                line = lines.next();
+                while (!line.strip().equals("}")) {
+                    ifStmt.addStatementToIf(parseStmt(line));
+                    line = lines.next();
+                }
+                return ifStmt;
+            }
+            case "while": {
+                pair = parseExpr(parts[1]);
+                ASTExpr cond = pair.getNode();
+                WhileStmt whileStmt = new WhileStmt(cond);
+                line = lines.next();
+                while (!line.strip().equals("}")) {
+                    whileStmt.addStatement(parseStmt(line));
+                    line = lines.next();
+                }
+                return whileStmt;
+            }
+            default:
+                String var = parts[0];
+                parts = line.split("=", 2);
+                pair = parseExpr(parts[1]);
+                return new EqualStmt(var, pair.getNode());
+        }
+    }
+
+    private ParsePair parseExpr(String line) {
         String[] parts;
         ASTExpr node;
         ParsePair pair;
+
+        line = line.stripLeading();
+        char first = line.charAt(0);
 
         if (Character.isDigit(first)) {
             parts = parseInt(line);
