@@ -49,7 +49,7 @@ public class Parser {
         parts = parseVar(line);
         switch (parts[0]) {
             case "print":
-                pair = parseExpr(parts[1]);
+                pair = parseExpr(parts[1].substring(1));
                 return new PrintStmt(pair.getNode());
             case "return":
                 pair = parseExpr(parts[1]);
