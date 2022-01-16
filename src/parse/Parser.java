@@ -67,10 +67,10 @@ public class Parser {
                 decl.addField(pair.getNode());
                 line = pair.getLine();
             }
+            line = lines.next().stripLeading();
         }
 
         MethodDecl methodDecl = null;
-        line = lines.next().stripLeading();
         while (!line.equals("]")) {
             if (line.startsWith("method")) {
                 line = className + "." + line.replace("method", "");

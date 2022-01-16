@@ -34,9 +34,10 @@ public class ClassDecl {
     }
 
     public String toString() {
-        String s = "class " + name + " [\nfields ";
+        String s = "class " + name + " [\n";
 
         if (!fields.isEmpty()) {
+            s += "fields ";
             for (ASTExpr var : fields) {
                 s += var + ", ";
             }
