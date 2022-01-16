@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
+import parse.Parser;
+
 public class Main {
     public static ArrayList<String> parseInput() {
         Scanner scanner = new Scanner(System.in);
