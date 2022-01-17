@@ -54,42 +54,53 @@ public class Parser {
     }
 
     private ClassDecl parseClassDecl(String line) {
-        ParsePair pair;
         String[] parts = line.split(" ");
         String className = parts[1];
-        ClassDecl decl = new ClassDecl(className);
-
+        ClassDecl classDecl = new ClassDecl(className);
         line = lines.next().stripLeading();
+        parseClassFields(classDecl, line);
+        parseMethodDecls(classDecl, line);
+        return classDecl;
+    }
+
+    private void parseClassFields(ClassDecl classDecl, String line) {
+        String[] parts;
         if (line.startsWith("fields")) {
             line = line.replace("fields", "");
             while (!line.isEmpty()) {
                 parts = parseVar(line.substring(1));
-                decl.addField(parts[0]);
+                classDecl.addField(parts[0]);
                 line = parts[1];
             }
             line = lines.next().stripLeading();
         }
 
+    }
+
+    private void parseMethodDecls(ClassDecl classDecl, String line) {
+        ParsePair pair;
+        String[] parts;
         MethodDecl methodDecl = null;
+
         while (!line.equals("]")) {
             if (line.startsWith("method")) {
-                line = className + "." + line.replace("method", "");
+                line = "x" + "." + line.replace("method", "");
                 pair = parseMethodExpr(line);
                 methodDecl = new MethodDecl((MethodExpr) pair.getNode());
                 line = pair.getLine().replace("with locals", "");
+
                 while (!line.isEmpty() && !line.equals(":")) {
                     parts = parseVar(line.substring(1));
                     methodDecl.addLocalVar(parts[0]);
                     line = parts[1];
                 }
-                decl.addMethod(methodDecl);
+                classDecl.addMethod(methodDecl);
+
             } else if (methodDecl != null) {
                 methodDecl.addStatement(parseStmt(line));
             }
             line = lines.next().stripLeading();
         }
-
-        return decl;
     }
 
     private void parseProgram(Program p, String line) {
