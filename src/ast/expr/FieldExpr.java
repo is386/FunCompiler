@@ -1,5 +1,7 @@
 package ast.expr;
 
+import org.json.JSONObject;
+
 public class FieldExpr extends ASTExpr {
     private final ASTExpr caller;
     private final String name;
@@ -10,6 +12,10 @@ public class FieldExpr extends ASTExpr {
     }
 
     public String toString() {
-        return "&" + caller + "." + name;
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("name", name)
+                .put("caller", new JSONObject(caller.toString()))
+                .toString();
     }
 }

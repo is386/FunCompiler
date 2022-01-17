@@ -2,6 +2,9 @@ package ast;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import ast.decl.ClassDecl;
 import ast.stmt.ASTStmt;
 
@@ -14,39 +17,46 @@ public class Program {
     }
 
     public void addVar(String lv) {
-        localVars.add(lv);
+        if (!lv.isEmpty()) {
+            localVars.add(lv);
+        }
     }
 
     public void addStatement(ASTStmt s) {
-        statements.add(s);
+        if (s != null) {
+            statements.add(s);
+        }
     }
 
     public void addClass(ClassDecl c) {
-        classes.add(c);
+        if (c != null) {
+            classes.add(c);
+        }
     }
 
     public String toString() {
-        String s = "";
+        JSONObject j = new JSONObject()
+                .put("node", this.getClass().getSimpleName());
+
+        JSONArray jClasses = new JSONArray();
         for (ClassDecl c : classes) {
-            s += c;
+            jClasses.put(new JSONObject(c.toString()));
         }
 
-        s += "main";
-
-        if (!localVars.isEmpty()) {
-            s += " with ";
-            for (String lv : localVars) {
-                s += lv + ", ";
-            }
-            s = s.substring(0, s.length() - 2);
+        JSONArray jVars = new JSONArray();
+        for (String lv : localVars) {
+            jVars.put(lv);
         }
 
-        s += ":\n";
-
-        for (ASTStmt stmt : statements) {
-            s += stmt + "\n\n";
+        JSONArray jStmts = new JSONArray();
+        for (ASTStmt s : statements) {
+            jStmts.put(new JSONObject(s.toString()));
         }
 
-        return s;
+        return j
+                .put("classes", jClasses)
+                .put("local-vars", jVars)
+                .put("stmts", jStmts)
+                .toString();
     }
 }

@@ -2,6 +2,9 @@ package ast.decl;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class ClassDecl {
     private final String name;
     private ArrayList<String> fields = new ArrayList<>();
@@ -12,28 +15,35 @@ public class ClassDecl {
     }
 
     public void addField(String f) {
-        fields.add(f);
+        if (!f.isEmpty()) {
+            fields.add(f);
+        }
     }
 
     public void addMethod(MethodDecl m) {
-        methods.add(m);
+        if (m != null) {
+            methods.add(m);
+        }
     }
 
     public String toString() {
-        String s = "class " + name + " [\n";
+        JSONObject j = new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("name", name);
 
-        if (!fields.isEmpty()) {
-            s += "fields ";
-            for (String f : fields) {
-                s += f + ", ";
-            }
-            s = s.substring(0, s.length() - 2);
+        JSONArray jFields = new JSONArray();
+        for (String f : fields) {
+            jFields.put(f);
         }
 
-        s += "\n";
+        JSONArray jMethods = new JSONArray();
         for (MethodDecl m : methods) {
-            s += m;
+            jMethods.put(new JSONObject(m.toString()));
         }
-        return s + "]\n\n";
+
+        return j
+                .put("fields", jFields)
+                .put("methods", jMethods)
+                .toString();
     }
 }

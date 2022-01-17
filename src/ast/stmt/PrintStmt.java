@@ -1,5 +1,7 @@
 package ast.stmt;
 
+import org.json.JSONObject;
+
 import ast.expr.ASTExpr;
 
 public class PrintStmt extends ASTStmt {
@@ -10,6 +12,9 @@ public class PrintStmt extends ASTStmt {
     }
 
     public String toString() {
-        return "print(" + expr + ")";
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("expr", new JSONObject(expr.toString()))
+                .toString();
     }
 }

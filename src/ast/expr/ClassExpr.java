@@ -1,5 +1,7 @@
 package ast.expr;
 
+import org.json.JSONObject;
+
 public class ClassExpr extends ASTExpr {
     private final String name;
 
@@ -8,6 +10,9 @@ public class ClassExpr extends ASTExpr {
     }
 
     public String toString() {
-        return "@" + name;
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("name", name)
+                .toString();
     }
 }

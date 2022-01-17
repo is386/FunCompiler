@@ -2,6 +2,9 @@ package ast.expr;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 public class MethodExpr extends ASTExpr {
     private final String name;
     private final ASTExpr caller;
@@ -17,7 +20,9 @@ public class MethodExpr extends ASTExpr {
     }
 
     public void addArg(ASTExpr arg) {
-        args.add(arg);
+        if (arg != null) {
+            args.add(arg);
+        }
     }
 
     public ArrayList<ASTExpr> getArgs() {
@@ -25,15 +30,16 @@ public class MethodExpr extends ASTExpr {
     }
 
     public String toString() {
-        String str = "^" + caller + "." + name + "(";
+        JSONObject j = new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("name", name)
+                .put("caller", new JSONObject(caller.toString()));
 
-        if (!args.isEmpty()) {
-            for (ASTExpr expr : args) {
-                str += expr + ", ";
-            }
-            return str.substring(0, str.length() - 2) + ")";
+        JSONArray jArgs = new JSONArray();
+        for (ASTExpr arg : args) {
+            jArgs.put(new JSONObject(arg.toString()));
         }
 
-        return str + ")";
+        return j.put("args", jArgs).toString();
     }
 }

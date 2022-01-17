@@ -1,5 +1,7 @@
 package ast.stmt;
 
+import org.json.JSONObject;
+
 import ast.expr.ASTExpr;
 
 public class UpdateStmt extends ASTStmt {
@@ -15,6 +17,11 @@ public class UpdateStmt extends ASTStmt {
 
     @Override
     public String toString() {
-        return "!" + caller + "." + name + " = " + newVal;
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("caller", new JSONObject(caller.toString()))
+                .put("field", name)
+                .put("newVal", new JSONObject(newVal.toString()))
+                .toString();
     }
 }

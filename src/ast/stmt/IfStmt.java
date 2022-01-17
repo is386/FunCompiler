@@ -2,6 +2,9 @@ package ast.stmt;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import ast.expr.ASTExpr;
 
 public class IfStmt extends ASTStmt {
@@ -15,34 +18,37 @@ public class IfStmt extends ASTStmt {
     }
 
     public void addStatementToIf(ASTStmt stmt) {
-        ifStatements.add(stmt);
+        if (stmt != null) {
+            ifStatements.add(stmt);
+        }
     }
 
     public void addStatementToElse(ASTStmt stmt) {
-        elseStatements.add(stmt);
+        if (stmt != null) {
+            elseStatements.add(stmt);
+        }
     }
 
     @Override
     public String toString() {
-        String s = "";
-        if (elseStatements.isEmpty()) {
-            s += "ifonly " + cond + ": {\n";
-        } else {
-            s += "if " + cond + ": {\n";
+        JSONObject j = new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("cond", new JSONObject(cond.toString()));
+
+        JSONArray jIfStmts = new JSONArray();
+        for (ASTStmt s : ifStatements) {
+            jIfStmts.put(new JSONObject(s.toString()));
         }
 
-        for (ASTStmt stmt : ifStatements) {
-            s += stmt + "\n";
+        JSONArray jElseStmts = new JSONArray();
+        for (ASTStmt s : elseStatements) {
+            jElseStmts.put(new JSONObject(s.toString()));
         }
 
-        if (!elseStatements.isEmpty()) {
-            s += "} else {\n";
-            for (ASTStmt stmt : elseStatements) {
-                s += stmt + "\n";
-            }
-        }
-        s += "}";
-        return s;
+        return j.put("if-stmts", jIfStmts)
+                .put("else-stmts", jElseStmts)
+                .toString();
+
     }
 
 }

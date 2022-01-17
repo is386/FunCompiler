@@ -2,6 +2,9 @@ package ast.decl;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import ast.expr.ASTExpr;
 import ast.expr.MethodExpr;
 import ast.stmt.ASTStmt;
@@ -15,33 +18,48 @@ public class MethodDecl {
     public MethodDecl(MethodExpr methodExpr) {
         this.name = methodExpr.getName();
         for (ASTExpr e : methodExpr.getArgs()) {
-            args.add(e.getName());
+            if (e != null) {
+                args.add(e.getName());
+            }
         }
     }
 
     public void addLocalVar(String lv) {
-        localVars.add(lv);
+        if (!lv.isEmpty()) {
+            localVars.add(lv);
+        }
     }
 
     public void addStatement(ASTStmt s) {
-        statements.add(s);
+        if (s != null) {
+            statements.add(s);
+        }
     }
 
     public String toString() {
-        String s = "method " + name + " with locals ";
+        JSONObject j = new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("name", name);
 
-        if (!localVars.isEmpty()) {
-            for (String lv : localVars) {
-                s += lv + ", ";
-            }
-            s = s.substring(0, s.length() - 2);
+        JSONArray jArgs = new JSONArray();
+        for (String a : args) {
+            jArgs.put(a);
         }
 
-        s += ":\n";
-        for (ASTStmt stmt : statements) {
-            s += stmt + "\n";
+        JSONArray jVars = new JSONArray();
+        for (String lv : localVars) {
+            jVars.put(lv);
         }
 
-        return s + "\n";
+        JSONArray jStmts = new JSONArray();
+        for (ASTStmt s : statements) {
+            jStmts.put(new JSONObject(s.toString()));
+        }
+
+        return j
+                .put("args", jArgs)
+                .put("local-vars", jVars)
+                .put("stmts", jStmts)
+                .toString();
     }
 }

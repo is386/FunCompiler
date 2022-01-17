@@ -1,5 +1,7 @@
 package ast.stmt;
 
+import org.json.JSONObject;
+
 import ast.expr.ASTExpr;
 
 public class EqualStmt extends ASTStmt {
@@ -12,7 +14,11 @@ public class EqualStmt extends ASTStmt {
     }
 
     public String toString() {
-        return var + " = " + expr;
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("var", var)
+                .put("expr", new JSONObject(expr.toString()))
+                .toString();
     }
 
 }

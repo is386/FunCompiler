@@ -59,6 +59,7 @@ public class Parser {
         ClassDecl classDecl = new ClassDecl(className);
         line = lines.next().stripLeading();
         parseClassFields(classDecl, line);
+        line = lines.next().stripLeading();
         parseMethodDecls(classDecl, line);
         return classDecl;
     }
@@ -72,9 +73,7 @@ public class Parser {
                 classDecl.addField(parts[0]);
                 line = parts[1];
             }
-            line = lines.next().stripLeading();
         }
-
     }
 
     private void parseMethodDecls(ClassDecl classDecl, String line) {

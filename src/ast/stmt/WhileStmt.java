@@ -2,6 +2,9 @@ package ast.stmt;
 
 import java.util.ArrayList;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import ast.expr.ASTExpr;
 
 public class WhileStmt extends ASTStmt {
@@ -14,17 +17,22 @@ public class WhileStmt extends ASTStmt {
     }
 
     public void addStatement(ASTStmt stmt) {
-        statements.add(stmt);
+        if (stmt != null) {
+            statements.add(stmt);
+        }
     }
 
     @Override
     public String toString() {
-        String s = "while " + cond + ": {\n";
-        ;
-        for (ASTStmt stmt : statements) {
-            s += stmt + "\n";
+        JSONObject j = new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("cond", new JSONObject(cond.toString()));
+
+        JSONArray jStmts = new JSONArray();
+        for (ASTStmt s : statements) {
+            jStmts.put(new JSONObject(s.toString()));
         }
-        s += "}";
-        return s;
+
+        return j.put("stmts", jStmts).toString();
     }
 }

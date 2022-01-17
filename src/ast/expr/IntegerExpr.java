@@ -1,5 +1,7 @@
 package ast.expr;
 
+import org.json.JSONObject;
+
 public class IntegerExpr extends ASTExpr {
     private final int value;
 
@@ -8,6 +10,9 @@ public class IntegerExpr extends ASTExpr {
     }
 
     public String toString() {
-        return String.valueOf(value);
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("value", value)
+                .toString();
     }
 }

@@ -1,5 +1,7 @@
 package ast.expr;
 
+import org.json.JSONObject;
+
 public class ArithExpr extends ASTExpr {
     private final ASTExpr op;
     private final ASTExpr expr1;
@@ -12,6 +14,11 @@ public class ArithExpr extends ASTExpr {
     }
 
     public String toString() {
-        return String.format("(%s %s %s)", expr1, op, expr2);
+        return new JSONObject()
+                .put("node", this.getClass().getSimpleName())
+                .put("op", op)
+                .put("expr1", new JSONObject(expr1.toString()))
+                .put("expr2", new JSONObject(expr2.toString()))
+                .toString();
     }
 }
