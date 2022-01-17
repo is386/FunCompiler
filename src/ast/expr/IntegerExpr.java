@@ -7,11 +7,6 @@ public class IntegerExpr extends ASTExpr {
         this.value = Integer.parseUnsignedInt(strInt);
     }
 
-    public int getValue() {
-        return value;
-    }
-
-    @Override
     public String toString() {
         return String.valueOf(value);
     }

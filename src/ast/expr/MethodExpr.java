@@ -16,10 +16,6 @@ public class MethodExpr extends ASTExpr {
         return name;
     }
 
-    public ASTExpr getCaller() {
-        return caller;
-    }
-
     public void addArg(ASTExpr arg) {
         args.add(arg);
     }
@@ -28,7 +24,6 @@ public class MethodExpr extends ASTExpr {
         return args;
     }
 
-    @Override
     public String toString() {
         String str = "^" + caller + "." + name + "(";
 

@@ -13,16 +13,8 @@ public class WhileStmt extends ASTStmt {
         this.cond = cond;
     }
 
-    public ASTExpr getCond() {
-        return cond;
-    }
-
     public void addStatement(ASTStmt stmt) {
         statements.add(stmt);
-    }
-
-    public ArrayList<ASTStmt> getStatements() {
-        return statements;
     }
 
     @Override

@@ -63,9 +63,9 @@ public class Parser {
         if (line.startsWith("fields")) {
             line = line.replace("fields", "");
             while (!line.isEmpty()) {
-                pair = parseVarExpr(line.substring(1));
-                decl.addField(pair.getNode());
-                line = pair.getLine();
+                parts = parseVar(line.substring(1));
+                decl.addField(parts[0]);
+                line = parts[1];
             }
             line = lines.next().stripLeading();
         }
@@ -75,12 +75,12 @@ public class Parser {
             if (line.startsWith("method")) {
                 line = className + "." + line.replace("method", "");
                 pair = parseMethodExpr(line);
-                methodDecl = new MethodDecl(pair.getNode());
+                methodDecl = new MethodDecl((MethodExpr) pair.getNode());
                 line = pair.getLine().replace("with locals", "");
                 while (!line.isEmpty() && !line.equals(":")) {
-                    pair = parseVarExpr(line.substring(1));
-                    methodDecl.addVar(pair.getNode());
-                    line = pair.getLine();
+                    parts = parseVar(line.substring(1));
+                    methodDecl.addLocalVar(parts[0]);
+                    line = parts[1];
                 }
                 decl.addMethod(methodDecl);
             } else if (methodDecl != null) {
@@ -97,13 +97,13 @@ public class Parser {
             return;
         }
 
-        ParsePair pair;
+        String[] parts;
         line = line.split("with")[1];
 
         while (!line.equals(":")) {
-            pair = parseVarExpr(line.substring(1));
-            line = pair.getLine();
-            p.addVar(pair.getNode());
+            parts = parseVar(line.substring(1));
+            line = parts[1];
+            p.addVar(parts[0]);
         }
     }
 

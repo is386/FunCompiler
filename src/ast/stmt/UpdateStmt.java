@@ -13,18 +13,6 @@ public class UpdateStmt extends ASTStmt {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public ASTExpr getCaller() {
-        return caller;
-    }
-
-    public ASTExpr getNewVal() {
-        return newVal;
-    }
-
     @Override
     public String toString() {
         return "!" + caller + "." + name + " = " + newVal;

@@ -11,15 +11,6 @@ public class EqualStmt extends ASTStmt {
         this.expr = expr;
     }
 
-    public String getVar() {
-        return var;
-    }
-
-    public ASTExpr getExpr() {
-        return expr;
-    }
-
-    @Override
     public String toString() {
         return var + " = " + expr;
     }

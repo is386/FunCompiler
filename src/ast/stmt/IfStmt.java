@@ -14,18 +14,6 @@ public class IfStmt extends ASTStmt {
         this.cond = cond;
     }
 
-    public ASTExpr getCond() {
-        return cond;
-    }
-
-    public ArrayList<ASTStmt> getIfStatements() {
-        return ifStatements;
-    }
-
-    public ArrayList<ASTStmt> getElseStatements() {
-        return elseStatements;
-    }
-
     public void addStatementToIf(ASTStmt stmt) {
         ifStatements.add(stmt);
     }

@@ -3,43 +3,36 @@ package ast.decl;
 import java.util.ArrayList;
 
 import ast.expr.ASTExpr;
+import ast.expr.MethodExpr;
 import ast.stmt.ASTStmt;
 
 public class MethodDecl {
-    private final ASTExpr method;
-    private ArrayList<ASTExpr> localVars = new ArrayList<>();
+    private final String name;
+    private ArrayList<String> localVars = new ArrayList<>();
+    private ArrayList<String> args = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
 
-    public MethodDecl(ASTExpr method) {
-        this.method = method;
+    public MethodDecl(MethodExpr methodExpr) {
+        this.name = methodExpr.getName();
+        for (ASTExpr e : methodExpr.getArgs()) {
+            args.add(e.getName());
+        }
     }
 
-    public ASTExpr getMethod() {
-        return method;
-    }
-
-    public void addVar(ASTExpr var) {
-        localVars.add(var);
-    }
-
-    public ArrayList<ASTExpr> getVars() {
-        return localVars;
+    public void addLocalVar(String lv) {
+        localVars.add(lv);
     }
 
     public void addStatement(ASTStmt s) {
         statements.add(s);
     }
 
-    public ArrayList<ASTStmt> getStatements() {
-        return statements;
-    }
-
     public String toString() {
-        String s = "method " + method.toString() + " with locals ";
+        String s = "method " + name + " with locals ";
 
         if (!localVars.isEmpty()) {
-            for (ASTExpr var : localVars) {
-                s += var + ", ";
+            for (String lv : localVars) {
+                s += lv + ", ";
             }
             s = s.substring(0, s.length() - 2);
         }

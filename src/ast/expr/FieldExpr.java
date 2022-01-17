@@ -9,15 +9,6 @@ public class FieldExpr extends ASTExpr {
         this.caller = caller;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public ASTExpr getCaller() {
-        return caller;
-    }
-
-    @Override
     public String toString() {
         return "&" + caller + "." + name;
     }

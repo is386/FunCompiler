@@ -11,19 +11,6 @@ public class ArithExpr extends ASTExpr {
         this.expr2 = expr2;
     }
 
-    public ASTExpr getOP() {
-        return op;
-    }
-
-    public ASTExpr getExpr1() {
-        return expr1;
-    }
-
-    public ASTExpr getExpr2() {
-        return expr2;
-    }
-
-    @Override
     public String toString() {
         return String.format("(%s %s %s)", expr1, op, expr2);
     }

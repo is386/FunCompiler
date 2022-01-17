@@ -2,35 +2,21 @@ package ast.decl;
 
 import java.util.ArrayList;
 
-import ast.expr.ASTExpr;
-
 public class ClassDecl {
     private final String name;
-    private ArrayList<ASTExpr> fields = new ArrayList<>();
-    private ArrayList<MethodDecl> methodDecls = new ArrayList<>();
+    private ArrayList<String> fields = new ArrayList<>();
+    private ArrayList<MethodDecl> methods = new ArrayList<>();
 
     public ClassDecl(String name) {
         this.name = name;
     }
 
-    public String getName() {
-        return name;
+    public void addField(String f) {
+        fields.add(f);
     }
 
-    public ArrayList<ASTExpr> getFields() {
-        return fields;
-    }
-
-    public ArrayList<MethodDecl> getMethodDecls() {
-        return methodDecls;
-    }
-
-    public void addField(ASTExpr var) {
-        fields.add(var);
-    }
-
-    public void addMethod(MethodDecl method) {
-        methodDecls.add(method);
+    public void addMethod(MethodDecl m) {
+        methods.add(m);
     }
 
     public String toString() {
@@ -38,14 +24,14 @@ public class ClassDecl {
 
         if (!fields.isEmpty()) {
             s += "fields ";
-            for (ASTExpr var : fields) {
-                s += var + ", ";
+            for (String f : fields) {
+                s += f + ", ";
             }
             s = s.substring(0, s.length() - 2);
         }
 
         s += "\n";
-        for (MethodDecl m : methodDecls) {
+        for (MethodDecl m : methods) {
             s += m;
         }
         return s + "]\n\n";

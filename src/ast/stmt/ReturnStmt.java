@@ -9,10 +9,6 @@ public class ReturnStmt extends ASTStmt {
         this.expr = expr;
     }
 
-    public ASTExpr getExpr() {
-        return expr;
-    }
-
     public String toString() {
         return "return " + expr;
     }
