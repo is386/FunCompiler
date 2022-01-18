@@ -2,11 +2,8 @@ package ast.stmt;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
-import ir.BasicBlock;
-import ir.primitives.Primitive;
-import ir.primitives.VariablePrimitive;
-import ir.stmt.IREqual;
 
 public class EqualStmt extends ASTStmt {
     private final String var;
@@ -25,10 +22,10 @@ public class EqualStmt extends ASTStmt {
                 .toString();
     }
 
-    public void buildBlock(BasicBlock block) {
-        VariablePrimitive varPrimitive = new VariablePrimitive(var);
-        Primitive exprPrimitive = expr.toPrimitive(block);
-        IREqual irStmt = new IREqual(varPrimitive, exprPrimitive);
-        System.out.println(irStmt);
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
+
 }

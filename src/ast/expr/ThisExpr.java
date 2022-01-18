@@ -2,9 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import ir.BasicBlock;
-import ir.primitives.Primitive;
-import ir.primitives.ThisPrimitive;
+import ast.ASTVistor;
 
 public class ThisExpr extends ASTExpr {
 
@@ -18,8 +16,9 @@ public class ThisExpr extends ASTExpr {
     }
 
     @Override
-    public Primitive toPrimitive(BasicBlock block) {
-        return new ThisPrimitive();
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 
 }

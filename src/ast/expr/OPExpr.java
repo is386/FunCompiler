@@ -1,7 +1,6 @@
 package ast.expr;
 
-import ir.BasicBlock;
-import ir.primitives.Primitive;
+import ast.ASTVistor;
 
 public class OPExpr extends ASTExpr {
 
@@ -16,8 +15,8 @@ public class OPExpr extends ASTExpr {
     }
 
     @Override
-    public Primitive toPrimitive(BasicBlock block) {
+    public void accept(ASTVistor vistor) {
         // TODO Auto-generated method stub
-        return null;
+
     }
 }

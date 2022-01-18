@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
-import ir.BasicBlock;
 
 public class IfStmt extends ASTStmt {
 
@@ -53,7 +53,7 @@ public class IfStmt extends ASTStmt {
     }
 
     @Override
-    public void buildBlock(BasicBlock block) {
+    public void accept(ASTVistor vistor) {
         // TODO Auto-generated method stub
 
     }

@@ -1,13 +1,10 @@
 package ast.expr;
 
-import ir.BasicBlock;
-import ir.primitives.Primitive;
+import ast.ASTNode;
 
-public abstract class ASTExpr {
+public abstract class ASTExpr extends ASTNode {
 
     public abstract String toString();
-
-    public abstract Primitive toPrimitive(BasicBlock block);
 
     public String getName() {
         return "";

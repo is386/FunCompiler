@@ -2,8 +2,8 @@ package ast.stmt;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
-import ir.BasicBlock;
 
 public class ReturnStmt extends ASTStmt {
     private final ASTExpr expr;
@@ -20,7 +20,7 @@ public class ReturnStmt extends ASTStmt {
     }
 
     @Override
-    public void buildBlock(BasicBlock block) {
+    public void accept(ASTVistor vistor) {
         // TODO Auto-generated method stub
 
     }

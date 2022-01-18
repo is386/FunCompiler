@@ -1,10 +1,8 @@
 package ast.stmt;
 
-import ir.BasicBlock;
+import ast.ASTNode;
 
-public abstract class ASTStmt {
+public abstract class ASTStmt extends ASTNode {
 
     public abstract String toString();
-
-    public abstract void buildBlock(BasicBlock block);
 }
