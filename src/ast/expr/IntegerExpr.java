@@ -2,6 +2,10 @@ package ast.expr;
 
 import org.json.JSONObject;
 
+import ir.BasicBlock;
+import ir.primitives.IntegerPrimitive;
+import ir.primitives.Primitive;
+
 public class IntegerExpr extends ASTExpr {
     private final int value;
 
@@ -14,5 +18,10 @@ public class IntegerExpr extends ASTExpr {
                 .put("node", this.getClass().getSimpleName())
                 .put("value", value)
                 .toString();
+    }
+
+    @Override
+    public Primitive toPrimitive(BasicBlock block) {
+        return new IntegerPrimitive(value);
     }
 }

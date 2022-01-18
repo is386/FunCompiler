@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
+import ir.BasicBlock;
 
 public class IfStmt extends ASTStmt {
 
@@ -48,6 +49,12 @@ public class IfStmt extends ASTStmt {
         return j.put("if-stmts", jIfStmts)
                 .put("else-stmts", jElseStmts)
                 .toString();
+
+    }
+
+    @Override
+    public void buildBlock(BasicBlock block) {
+        // TODO Auto-generated method stub
 
     }
 

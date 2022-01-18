@@ -6,6 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
+import ir.BasicBlock;
 
 public class WhileStmt extends ASTStmt {
 
@@ -34,5 +35,11 @@ public class WhileStmt extends ASTStmt {
         }
 
         return j.put("stmts", jStmts).toString();
+    }
+
+    @Override
+    public void buildBlock(BasicBlock block) {
+        // TODO Auto-generated method stub
+
     }
 }

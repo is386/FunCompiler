@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import ast.Program;
+import ir.CFGBuilder;
 import parse.Parser;
 
 public class Main {
@@ -21,6 +22,7 @@ public class Main {
         ArrayList<String> source = parseInput();
         Parser parser = new Parser(source);
         Program prog = parser.parse();
-        System.out.println(prog);
+        CFGBuilder cfgBuilder = new CFGBuilder(prog);
+        cfgBuilder.build();
     }
 }

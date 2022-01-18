@@ -3,6 +3,7 @@ package ast.stmt;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
+import ir.BasicBlock;
 
 public class UpdateStmt extends ASTStmt {
     private final ASTExpr caller;
@@ -23,5 +24,11 @@ public class UpdateStmt extends ASTStmt {
                 .put("field", name)
                 .put("newVal", new JSONObject(newVal.toString()))
                 .toString();
+    }
+
+    @Override
+    public void buildBlock(BasicBlock block) {
+        // TODO Auto-generated method stub
+
     }
 }

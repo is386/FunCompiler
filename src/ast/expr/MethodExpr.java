@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ir.BasicBlock;
+import ir.primitives.Primitive;
+
 public class MethodExpr extends ASTExpr {
     private final String name;
     private final ASTExpr caller;
@@ -41,5 +44,11 @@ public class MethodExpr extends ASTExpr {
         }
 
         return j.put("args", jArgs).toString();
+    }
+
+    @Override
+    public Primitive toPrimitive(BasicBlock block) {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

@@ -34,6 +34,10 @@ public class Program {
         }
     }
 
+    public ArrayList<ASTStmt> getStatements() {
+        return statements;
+    }
+
     public String toString() {
         JSONObject j = new JSONObject()
                 .put("node", this.getClass().getSimpleName());
