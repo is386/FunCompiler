@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import ast.ASTVistor;
+import ir.CFGVisitor;
 
 public class VariableExpr extends ASTExpr {
     private final String name;
@@ -24,8 +24,7 @@ public class VariableExpr extends ASTExpr {
     }
 
     @Override
-    public void accept(ASTVistor vistor) {
-        // TODO Auto-generated method stub
-
+    public void accept(CFGVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -1,6 +1,6 @@
 package ast.expr;
 
-import ast.ASTVistor;
+import ir.CFGVisitor;
 
 public class OPExpr extends ASTExpr {
 
@@ -15,8 +15,6 @@ public class OPExpr extends ASTExpr {
     }
 
     @Override
-    public void accept(ASTVistor vistor) {
-        // TODO Auto-generated method stub
-
+    public void accept(CFGVisitor visitor) {
     }
 }

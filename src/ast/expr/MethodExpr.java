@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ast.ASTVistor;
+import ir.CFGVisitor;
 
 public class MethodExpr extends ASTExpr {
     private final String name;
@@ -46,8 +46,7 @@ public class MethodExpr extends ASTExpr {
     }
 
     @Override
-    public void accept(ASTVistor vistor) {
-        // TODO Auto-generated method stub
-
+    public void accept(CFGVisitor visitor) {
+        visitor.visit(this);
     }
 }

@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ast.ASTVistor;
 import ast.expr.ASTExpr;
+import ir.CFGVisitor;
 
 public class WhileStmt extends ASTStmt {
 
@@ -38,8 +38,7 @@ public class WhileStmt extends ASTStmt {
     }
 
     @Override
-    public void accept(ASTVistor vistor) {
-        // TODO Auto-generated method stub
-
+    public void accept(CFGVisitor visitor) {
+        visitor.visit(this);
     }
 }

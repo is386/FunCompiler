@@ -6,10 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.ASTNode;
-import ast.ASTVistor;
 import ast.expr.ASTExpr;
 import ast.expr.MethodExpr;
 import ast.stmt.ASTStmt;
+import ir.CFGVisitor;
 
 public class MethodDecl extends ASTNode {
     private final String name;
@@ -66,7 +66,7 @@ public class MethodDecl extends ASTNode {
     }
 
     @Override
-    public void accept(ASTVistor vistor) {
+    public void accept(CFGVisitor visitor) {
         // TODO Auto-generated method stub
 
     }

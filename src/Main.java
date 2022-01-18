@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import ast.Program;
+import ir.CFGVisitor;
 import parse.Parser;
 
 public class Main {
@@ -20,7 +21,8 @@ public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<String> source = parseInput();
         Parser parser = new Parser(source);
-        Program prog = parser.parse();
-        System.out.println(prog);
+        Program program = parser.parse();
+        CFGVisitor cfgVisitor = new CFGVisitor();
+        program.accept(cfgVisitor);
     }
 }

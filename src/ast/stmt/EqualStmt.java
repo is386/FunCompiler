@@ -2,8 +2,8 @@ package ast.stmt;
 
 import org.json.JSONObject;
 
-import ast.ASTVistor;
 import ast.expr.ASTExpr;
+import ir.CFGVisitor;
 
 public class EqualStmt extends ASTStmt {
     private final String var;
@@ -22,10 +22,17 @@ public class EqualStmt extends ASTStmt {
                 .toString();
     }
 
-    @Override
-    public void accept(ASTVistor vistor) {
-        // TODO Auto-generated method stub
+    public String getVar() {
+        return var;
+    }
 
+    public ASTExpr getExpr() {
+        return expr;
+    }
+
+    @Override
+    public void accept(CFGVisitor visitor) {
+        visitor.visit(this);
     }
 
 }

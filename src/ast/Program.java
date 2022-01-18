@@ -7,8 +7,9 @@ import org.json.JSONObject;
 
 import ast.decl.ClassDecl;
 import ast.stmt.ASTStmt;
+import ir.CFGVisitor;
 
-public class Program {
+public class Program extends ASTNode {
     private ArrayList<String> localVars = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
     private ArrayList<ClassDecl> classes = new ArrayList<>();
@@ -32,6 +33,10 @@ public class Program {
         if (c != null) {
             classes.add(c);
         }
+    }
+
+    public ArrayList<ASTStmt> getStatements() {
+        return statements;
     }
 
     public String toString() {
@@ -58,5 +63,9 @@ public class Program {
                 .put("local-vars", jVars)
                 .put("stmts", jStmts)
                 .toString();
+    }
+
+    @Override
+    public void accept(CFGVisitor visitor) {
     }
 }
