@@ -2,6 +2,7 @@ package ast.stmt;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
 
 public class UpdateStmt extends ASTStmt {
@@ -23,5 +24,11 @@ public class UpdateStmt extends ASTStmt {
                 .put("field", name)
                 .put("newVal", new JSONObject(newVal.toString()))
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

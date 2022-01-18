@@ -2,6 +2,8 @@ package ast.expr;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
+
 public class ArithExpr extends ASTExpr {
     private final ASTExpr op;
     private final ASTExpr expr1;
@@ -20,5 +22,11 @@ public class ArithExpr extends ASTExpr {
                 .put("expr1", new JSONObject(expr1.toString()))
                 .put("expr2", new JSONObject(expr2.toString()))
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

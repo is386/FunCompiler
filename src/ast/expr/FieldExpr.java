@@ -2,6 +2,8 @@ package ast.expr;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
+
 public class FieldExpr extends ASTExpr {
     private final ASTExpr caller;
     private final String name;
@@ -17,5 +19,11 @@ public class FieldExpr extends ASTExpr {
                 .put("name", name)
                 .put("caller", new JSONObject(caller.toString()))
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

@@ -5,7 +5,10 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-public class ClassDecl {
+import ast.ASTNode;
+import ast.ASTVistor;
+
+public class ClassDecl extends ASTNode {
     private final String name;
     private ArrayList<String> fields = new ArrayList<>();
     private ArrayList<MethodDecl> methods = new ArrayList<>();
@@ -45,5 +48,11 @@ public class ClassDecl {
                 .put("fields", jFields)
                 .put("methods", jMethods)
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

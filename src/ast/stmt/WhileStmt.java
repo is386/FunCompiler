@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
 
 public class WhileStmt extends ASTStmt {
@@ -34,5 +35,11 @@ public class WhileStmt extends ASTStmt {
         }
 
         return j.put("stmts", jStmts).toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

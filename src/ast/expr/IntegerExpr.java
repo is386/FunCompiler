@@ -2,6 +2,8 @@ package ast.expr;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
+
 public class IntegerExpr extends ASTExpr {
     private final int value;
 
@@ -14,5 +16,11 @@ public class IntegerExpr extends ASTExpr {
                 .put("node", this.getClass().getSimpleName())
                 .put("value", value)
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

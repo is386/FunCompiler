@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
 
 public class IfStmt extends ASTStmt {
@@ -48,6 +49,12 @@ public class IfStmt extends ASTStmt {
         return j.put("if-stmts", jIfStmts)
                 .put("else-stmts", jElseStmts)
                 .toString();
+
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
 
     }
 

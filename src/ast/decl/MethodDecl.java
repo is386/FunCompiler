@@ -5,11 +5,13 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import ast.ASTNode;
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
 import ast.expr.MethodExpr;
 import ast.stmt.ASTStmt;
 
-public class MethodDecl {
+public class MethodDecl extends ASTNode {
     private final String name;
     private ArrayList<String> localVars = new ArrayList<>();
     private ArrayList<String> args = new ArrayList<>();
@@ -61,5 +63,11 @@ public class MethodDecl {
                 .put("local-vars", jVars)
                 .put("stmts", jStmts)
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 }

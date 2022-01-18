@@ -1,6 +1,8 @@
 package ast.expr;
 
-public abstract class ASTExpr {
+import ast.ASTNode;
+
+public abstract class ASTExpr extends ASTNode {
 
     public abstract String toString();
 

@@ -2,6 +2,7 @@ package ast.stmt;
 
 import org.json.JSONObject;
 
+import ast.ASTVistor;
 import ast.expr.ASTExpr;
 
 public class EqualStmt extends ASTStmt {
@@ -19,6 +20,12 @@ public class EqualStmt extends ASTStmt {
                 .put("var", var)
                 .put("expr", new JSONObject(expr.toString()))
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVistor vistor) {
+        // TODO Auto-generated method stub
+
     }
 
 }
