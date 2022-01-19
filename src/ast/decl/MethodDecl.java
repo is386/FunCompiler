@@ -67,7 +67,6 @@ public class MethodDecl extends ASTNode {
 
     @Override
     public void accept(CFGVisitor visitor) {
-        // TODO Auto-generated method stub
-
+        visitor.visit(this);
     }
 }

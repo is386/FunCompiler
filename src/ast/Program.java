@@ -67,5 +67,6 @@ public class Program extends ASTNode {
 
     @Override
     public void accept(CFGVisitor visitor) {
+        visitor.visit(this);
     }
 }

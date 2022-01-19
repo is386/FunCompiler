@@ -6,11 +6,11 @@ import ast.decl.MethodDecl;
 import ast.expr.ArithExpr;
 import ast.expr.ClassExpr;
 import ast.expr.FieldExpr;
-import ast.expr.IntegerExpr;
+import ast.expr.IntExpr;
 import ast.expr.MethodExpr;
 import ast.expr.ThisExpr;
-import ast.expr.VariableExpr;
-import ast.stmt.EqualStmt;
+import ast.expr.VarExpr;
+import ast.stmt.AssignStmt;
 import ast.stmt.IfStmt;
 import ast.stmt.PrintStmt;
 import ast.stmt.ReturnStmt;
@@ -25,7 +25,7 @@ public interface Visitor {
 
     public void visit(MethodDecl node);
 
-    public void visit(EqualStmt node);
+    public void visit(AssignStmt node);
 
     public void visit(IfStmt node);
 
@@ -37,9 +37,9 @@ public interface Visitor {
 
     public void visit(UpdateStmt node);
 
-    public void visit(IntegerExpr node);
+    public void visit(IntExpr node);
 
-    public void visit(VariableExpr node);
+    public void visit(VarExpr node);
 
     public void visit(MethodExpr node);
 

@@ -12,6 +12,10 @@ public class PrintStmt extends ASTStmt {
         this.expr = expr;
     }
 
+    public ASTExpr getExpr() {
+        return expr;
+    }
+
     public String toString() {
         return new JSONObject()
                 .put("node", this.getClass().getSimpleName())

@@ -12,13 +12,13 @@ import ast.expr.ASTExpr;
 import ast.expr.ArithExpr;
 import ast.expr.ClassExpr;
 import ast.expr.FieldExpr;
-import ast.expr.IntegerExpr;
+import ast.expr.IntExpr;
 import ast.expr.MethodExpr;
 import ast.expr.OPExpr;
 import ast.expr.ThisExpr;
-import ast.expr.VariableExpr;
+import ast.expr.VarExpr;
 import ast.stmt.ASTStmt;
-import ast.stmt.EqualStmt;
+import ast.stmt.AssignStmt;
 import ast.stmt.IfStmt;
 import ast.stmt.PrintStmt;
 import ast.stmt.ReturnStmt;
@@ -209,7 +209,7 @@ public class Parser {
         line = line.stripLeading();
         String[] parts = line.split("=", 2);
         ParsePair pair = parseExpr(parts[1]);
-        return new EqualStmt(var, pair.getNode());
+        return new AssignStmt(var, pair.getNode());
     }
 
     private ASTStmt parseUpdateStmt(String line) {
@@ -289,7 +289,7 @@ public class Parser {
     private ParsePair parseIntExpr(String line) {
         line = line.stripLeading();
         String[] parts = parseInt(line);
-        ASTExpr node = new IntegerExpr(parts[0]);
+        ASTExpr node = new IntExpr(parts[0]);
         return new ParsePair(node, parts[1]);
     }
 
@@ -301,7 +301,7 @@ public class Parser {
         if (parts[0].equals("this")) {
             node = new ThisExpr();
         } else {
-            node = new VariableExpr(parts[0]);
+            node = new VarExpr(parts[0]);
         }
 
         return new ParsePair(node, parts[1]);

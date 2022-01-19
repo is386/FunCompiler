@@ -15,6 +15,18 @@ public class ArithExpr extends ASTExpr {
         this.expr2 = expr2;
     }
 
+    public String getOp() {
+        return op.toString();
+    }
+
+    public ASTExpr getExpr1() {
+        return expr1;
+    }
+
+    public ASTExpr getExpr2() {
+        return expr2;
+    }
+
     public String toString() {
         return new JSONObject()
                 .put("node", this.getClass().getSimpleName())

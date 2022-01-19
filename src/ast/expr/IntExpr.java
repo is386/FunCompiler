@@ -4,11 +4,15 @@ import org.json.JSONObject;
 
 import ir.CFGVisitor;
 
-public class IntegerExpr extends ASTExpr {
+public class IntExpr extends ASTExpr {
     private final int value;
 
-    public IntegerExpr(String strInt) {
+    public IntExpr(String strInt) {
         this.value = Integer.parseUnsignedInt(strInt);
+    }
+
+    public int getValue() {
+        return value;
     }
 
     public String toString() {

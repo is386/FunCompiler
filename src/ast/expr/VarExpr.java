@@ -4,10 +4,10 @@ import org.json.JSONObject;
 
 import ir.CFGVisitor;
 
-public class VariableExpr extends ASTExpr {
+public class VarExpr extends ASTExpr {
     private final String name;
 
-    public VariableExpr(String name) {
+    public VarExpr(String name) {
         this.name = name;
     }
 

@@ -1,26 +1,33 @@
 package ir;
 
-import java.util.ArrayList;
+import java.util.Stack;
 
 public class BasicBlock {
     private final String name;
-    private ArrayList<IRStmt> statements = new ArrayList<>();
-    private int varCounter;
+    private Stack<IRStmt> statements = new Stack<>();
 
-    public BasicBlock(String name, int varCounter) {
+    public BasicBlock(String name) {
         this.name = name;
-        this.varCounter = varCounter;
     }
 
-    public void addStatement(IRStmt p) {
+    public void push(IRStmt p) {
         statements.add(p);
     }
 
-    public int getVarCounter() {
-        return varCounter;
+    public IRStmt pop() {
+        return statements.pop();
     }
 
-    public void incrVarCounter() {
-        varCounter++;
+    public IRStmt peek() {
+        return statements.peek();
     }
+
+    public String toString() {
+        String s = name + ":\n";
+        for (IRStmt ir : statements) {
+            s += "    " + ir + "\n";
+        }
+        return s;
+    }
+
 }
