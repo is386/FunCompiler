@@ -112,13 +112,17 @@ public class CFGVisitor implements Visitor {
     @Override
     public void visit(ArithExpr node) {
         ArithPrimitive arithPrimitive = new ArithPrimitive(node.getOp());
+
         node.getExpr1().accept(this);
         arithPrimitive.setPrim1(primitives.pop());
+
         node.getExpr2().accept(this);
         arithPrimitive.setPrim2(primitives.pop());
+
         String varNum = Integer.toString(tempVarCount);
-        tempVarCount++;
         TempPrimitive tempVar = new TempPrimitive(varNum);
+        tempVarCount++;
+
         IRStmt ir = new IRStmt(tempVar, arithPrimitive);
         currentBlock.push(ir);
         primitives.push(tempVar);
