@@ -52,7 +52,6 @@ public class IfStmt extends ASTStmt {
 
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

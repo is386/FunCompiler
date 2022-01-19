@@ -13,6 +13,14 @@ public class FieldExpr extends ASTExpr {
         this.caller = caller;
     }
 
+    public ASTExpr getCaller() {
+        return caller;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public String toString() {
         return new JSONObject()
                 .put("node", this.getClass().getSimpleName())
@@ -21,7 +29,6 @@ public class FieldExpr extends ASTExpr {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

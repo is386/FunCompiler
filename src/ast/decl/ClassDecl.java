@@ -25,8 +25,21 @@ public class ClassDecl extends ASTNode {
 
     public void addMethod(MethodDecl m) {
         if (m != null) {
+            m.setName(m.getName() + name);
             methods.add(m);
         }
+    }
+
+    public ArrayList<String> getFields() {
+        return fields;
+    }
+
+    public ArrayList<MethodDecl> getMethods() {
+        return methods;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String toString() {
@@ -50,7 +63,6 @@ public class ClassDecl extends ASTNode {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

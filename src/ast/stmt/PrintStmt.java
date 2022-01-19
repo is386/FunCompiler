@@ -23,7 +23,6 @@ public class PrintStmt extends ASTStmt {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

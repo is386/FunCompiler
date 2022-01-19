@@ -22,7 +22,6 @@ public class IntExpr extends ASTExpr {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

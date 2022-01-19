@@ -2,6 +2,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import ast.Program;
+import ir.BasicBlock;
 import ir.CFGVisitor;
 import parse.Parser;
 
@@ -24,5 +25,8 @@ public class Main {
         Program program = parser.parse();
         CFGVisitor cfgVisitor = new CFGVisitor();
         program.accept(cfgVisitor);
+        for (BasicBlock b : cfgVisitor.getBlocks()) {
+            System.out.println(b);
+        }
     }
 }

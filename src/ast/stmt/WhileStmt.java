@@ -37,7 +37,6 @@ public class WhileStmt extends ASTStmt {
         return j.put("stmts", jStmts).toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

@@ -11,6 +11,10 @@ public class ClassExpr extends ASTExpr {
         this.name = name;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public String toString() {
         return new JSONObject()
                 .put("node", this.getClass().getSimpleName())

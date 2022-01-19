@@ -12,6 +12,10 @@ public class ReturnStmt extends ASTStmt {
         this.expr = expr;
     }
 
+    public ASTExpr getExpr() {
+        return expr;
+    }
+
     public String toString() {
         return new JSONObject()
                 .put("node", this.getClass().getSimpleName())
@@ -19,7 +23,6 @@ public class ReturnStmt extends ASTStmt {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

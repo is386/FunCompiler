@@ -12,7 +12,7 @@ import ast.stmt.ASTStmt;
 import ir.CFGVisitor;
 
 public class MethodDecl extends ASTNode {
-    private final String name;
+    private String name;
     private ArrayList<String> localVars = new ArrayList<>();
     private ArrayList<String> args = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
@@ -26,6 +26,10 @@ public class MethodDecl extends ASTNode {
         }
     }
 
+    public ArrayList<ASTStmt> getStatements() {
+        return statements;
+    }
+
     public void addLocalVar(String lv) {
         if (!lv.isEmpty()) {
             localVars.add(lv);
@@ -36,6 +40,22 @@ public class MethodDecl extends ASTNode {
         if (s != null) {
             statements.add(s);
         }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String s) {
+        name = s;
+    }
+
+    public String getBlockName() {
+        String blockName = name + "(%this";
+        if (args.size() != 0) {
+            blockName += "%" + String.join(",%", args);
+        }
+        return blockName + ")";
     }
 
     public String toString() {
@@ -65,7 +85,6 @@ public class MethodDecl extends ASTNode {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

@@ -30,7 +30,6 @@ public class AssignStmt extends ASTStmt {
         return expr;
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

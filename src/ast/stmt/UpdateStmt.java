@@ -26,7 +26,6 @@ public class UpdateStmt extends ASTStmt {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }

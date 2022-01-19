@@ -39,6 +39,10 @@ public class Program extends ASTNode {
         return statements;
     }
 
+    public ArrayList<ClassDecl> getClasses() {
+        return classes;
+    }
+
     public String toString() {
         JSONObject j = new JSONObject()
                 .put("node", this.getClass().getSimpleName());
@@ -65,7 +69,6 @@ public class Program extends ASTNode {
                 .toString();
     }
 
-    @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
