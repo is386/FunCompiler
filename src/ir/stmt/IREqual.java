@@ -1,4 +1,4 @@
-package ir;
+package ir.stmt;
 
 import ir.primitives.Primitive;
 

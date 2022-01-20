@@ -2,6 +2,8 @@ package ir;
 
 import java.util.Stack;
 
+import ir.stmt.IRStmt;
+
 public class BasicBlock {
     private final String name;
     private Stack<IRStmt> statements = new Stack<>();

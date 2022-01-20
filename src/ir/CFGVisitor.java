@@ -8,6 +8,9 @@ import ast.decl.MethodDecl;
 import ast.expr.*;
 import ast.stmt.*;
 import ir.primitives.*;
+import ir.stmt.IRData;
+import ir.stmt.IREqual;
+import ir.stmt.IRStmt;
 
 public class CFGVisitor implements Visitor {
 
