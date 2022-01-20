@@ -40,6 +40,11 @@ public class CFGVisitor implements Visitor {
         fields = new ArrayList<>(uniqueNames);
         uniqueNames.clear();
 
+        for (MethodDecl m : methods) {
+            uniqueNames.add(m.getName());
+        }
+        methodNames = new ArrayList<>(uniqueNames);
+
         currentBlock = new BasicBlock("data");
         for (ClassDecl c : node.getClasses()) {
             c.accept(this);
@@ -48,10 +53,8 @@ public class CFGVisitor implements Visitor {
 
         blocks.add(new BasicBlock("code"));
         for (MethodDecl m : methods) {
-            uniqueNames.add(m.getName());
             m.accept(this);
         }
-        methodNames = new ArrayList<>(uniqueNames);
 
         currentBlock = new BasicBlock("main");
         for (ASTStmt s : node.getStatements()) {
@@ -243,8 +246,13 @@ public class CFGVisitor implements Visitor {
         }
 
         ArrayList<Object> vtable = new ArrayList<>();
-        for (MethodDecl m : node.getMethods()) {
-            vtable.add(m.getName() + m.getClassName());
+        for (String m : methodNames) {
+            MethodDecl methodDecl = node.getMethodByName(m);
+            if (methodDecl != null) {
+                vtable.add(methodDecl.getName() + methodDecl.getClassName());
+            } else {
+                vtable.add(0);
+            }
         }
 
         IRData irVtable = new IRData("vtbl" + node.getName(), vtable);

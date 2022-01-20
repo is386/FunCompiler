@@ -42,6 +42,15 @@ public class ClassDecl extends ASTNode {
         return name;
     }
 
+    public MethodDecl getMethodByName(String m) {
+        for (MethodDecl method : methods) {
+            if (m.equals(method.getName())) {
+                return method;
+            }
+        }
+        return null;
+    }
+
     public String toString() {
         JSONObject j = new JSONObject()
                 .put("node", this.getClass().getSimpleName())
