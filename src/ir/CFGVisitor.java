@@ -150,8 +150,10 @@ public class CFGVisitor implements Visitor {
         ir = new IREqual(tempVar, load);
         currentBlock.push(ir);
 
-        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
-        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
+        int offset = fields.indexOf(node.getName());
+        offset = (offset == -1) ? 0 : offset;
+        IntPrimitive offsetPrim = new IntPrimitive(offset);
+        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
@@ -194,8 +196,10 @@ public class CFGVisitor implements Visitor {
         IREqual ir = new IREqual(tempVar, load);
         currentBlock.push(ir);
 
-        IntPrimitive offset = new IntPrimitive(methodNames.indexOf(node.getName()));
-        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
+        int offset = methodNames.indexOf(node.getName());
+        offset = (offset == -1) ? 0 : offset;
+        IntPrimitive offsetPrim = new IntPrimitive(offset);
+        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
