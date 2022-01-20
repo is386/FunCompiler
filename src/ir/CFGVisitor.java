@@ -43,7 +43,7 @@ public class CFGVisitor implements Visitor {
     private ArrayList<String> fields = new ArrayList<>();
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
-    private boolean storeClassToVar = false;
+    private Primitive assignedVar = null;
 
     public ArrayList<BasicBlock> getBlocks() {
         return blocks;
@@ -86,25 +86,17 @@ public class CFGVisitor implements Visitor {
             var = null;
         } else {
             var = new VarPrimitive(node.getVar());
-            primitives.push(var);
         }
-
-        if (node.getExpr() instanceof ClassExpr) {
-            storeClassToVar = true;
-        }
-
+        assignedVar = var;
         node.getExpr().accept(this);
 
-        if (primitives.size() != 0 && primitives.peek() == var) {
-            primitives.pop();
-        }
-
         IREqual ir;
-        if (primitives.size() != 0) {
+        if (assignedVar != null) {
             Primitive p = primitives.pop();
             ir = new IREqual(var, p);
             currentBlock.push(ir);
         }
+        assignedVar = null;
     }
 
     @Override
@@ -162,27 +154,27 @@ public class CFGVisitor implements Visitor {
         arithPrimitive.setPrim1(caller);
         arithPrimitive.setPrim2(new IntPrimitive(8));
 
-        TempPrimitive tempVar = getNextTemp();
-        IREqual ir = new IREqual(tempVar, arithPrimitive);
+        TempPrimitive returnVar = getNextTemp();
+        IREqual ir = new IREqual(returnVar, arithPrimitive);
         currentBlock.push(ir);
 
-        LoadPrimitive load = new LoadPrimitive(tempVar);
-        tempVar = getNextTemp();
-        ir = new IREqual(tempVar, load);
+        LoadPrimitive load = new LoadPrimitive(returnVar);
+        returnVar = getNextTemp();
+        ir = new IREqual(returnVar, load);
         currentBlock.push(ir);
 
         IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
-        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
-        tempVar = getNextTemp();
-        ir = new IREqual(tempVar, getElt);
+        GetEltPrimitive getElt = new GetEltPrimitive(returnVar, offset);
+        returnVar = getNextTemp();
+        ir = new IREqual(returnVar, getElt);
         currentBlock.push(ir);
 
-        getElt = new GetEltPrimitive(caller, tempVar);
-        tempVar = getNextTemp();
-        ir = new IREqual(tempVar, getElt);
+        getElt = new GetEltPrimitive(caller, returnVar);
+        returnVar = getNextTemp();
+        ir = new IREqual(returnVar, getElt);
         currentBlock.push(ir);
 
-        primitives.push(tempVar);
+        primitives.push(returnVar);
     }
 
     @Override
@@ -190,23 +182,23 @@ public class CFGVisitor implements Visitor {
         int allocSpace = fieldCounts.get(node.getName());
         AllocPrimitive alloc = new AllocPrimitive(allocSpace + 2);
 
-        Primitive var;
-        if (storeClassToVar) {
-            var = primitives.pop();
-            storeClassToVar = false;
+        Primitive returnVar = null;
+        if (assignedVar != null) {
+            returnVar = assignedVar;
+            assignedVar = null;
         } else {
-            var = getNextTemp();
+            returnVar = getNextTemp();
         }
-        IRStmt ir = new IREqual(var, alloc);
+        IRStmt ir = new IREqual(returnVar, alloc);
         currentBlock.push(ir);
 
         GlobalPrimitive global = new GlobalPrimitive("vtbl" + node.getName());
-        StorePrimitive store = new StorePrimitive(var, global);
+        StorePrimitive store = new StorePrimitive(returnVar, global);
         ir = new IREqual(null, store);
         currentBlock.push(ir);
 
         ArithPrimitive arithPrimitive = new ArithPrimitive("+");
-        arithPrimitive.setPrim1(var);
+        arithPrimitive.setPrim1(returnVar);
         arithPrimitive.setPrim2(new IntPrimitive(8));
 
         TempPrimitive tempVar = getNextTemp();
@@ -217,13 +209,18 @@ public class CFGVisitor implements Visitor {
         store = new StorePrimitive(tempVar, global);
         ir = new IREqual(null, store);
         currentBlock.push(ir);
-        primitives.push(var);
+        primitives.push(returnVar);
     }
 
     @Override
     public void visit(ArithExpr node) {
         ArithPrimitive arithPrimitive = new ArithPrimitive(node.getOp());
-        primitives.push(getNextTemp());
+        Primitive returnVar = null;
+
+        if (assignedVar != null) {
+            returnVar = assignedVar;
+            assignedVar = null;
+        }
 
         node.getExpr1().accept(this);
         arithPrimitive.setPrim1(primitives.pop());
@@ -231,19 +228,15 @@ public class CFGVisitor implements Visitor {
         node.getExpr2().accept(this);
         arithPrimitive.setPrim2(primitives.pop());
 
-        Primitive var;
-        if (primitives.size() == 2) {
-            primitives.pop();
-            var = primitives.pop();
-        } else if (primitives.size() > 0) {
-            var = primitives.peek();
-        } else {
-            var = getNextTemp();
-            primitives.push(var);
+        if (returnVar == null && primitives.size() == 0) {
+            returnVar = getNextTemp();
+        } else if (returnVar == null && primitives.size() != 0) {
+            returnVar = primitives.pop();
         }
 
-        IRStmt ir = new IREqual(var, arithPrimitive);
+        IRStmt ir = new IREqual(returnVar, arithPrimitive);
         currentBlock.push(ir);
+        primitives.push(returnVar);
     }
 
     @Override
