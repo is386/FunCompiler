@@ -1,39 +1,13 @@
 package ir;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Stack;
+import java.util.*;
 
 import ast.Program;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.ArithExpr;
-import ast.expr.ClassExpr;
-import ast.expr.FieldExpr;
-import ast.expr.IntExpr;
-import ast.expr.MethodExpr;
-import ast.expr.ThisExpr;
-import ast.expr.VarExpr;
-import ast.stmt.ASTStmt;
-import ast.stmt.AssignStmt;
-import ast.stmt.IfStmt;
-import ast.stmt.PrintStmt;
-import ast.stmt.ReturnStmt;
-import ast.stmt.UpdateStmt;
-import ast.stmt.WhileStmt;
-import ir.primitives.AllocPrimitive;
-import ir.primitives.ArithPrimitive;
-import ir.primitives.GetEltPrimitive;
-import ir.primitives.GlobalPrimitive;
-import ir.primitives.IntPrimitive;
-import ir.primitives.LoadPrimitive;
-import ir.primitives.Primitive;
-import ir.primitives.PrintPrimitive;
-import ir.primitives.ReturnPrimitive;
-import ir.primitives.StorePrimitive;
-import ir.primitives.TempPrimitive;
-import ir.primitives.VarPrimitive;
+import ast.expr.*;
+import ast.stmt.*;
+import ir.primitives.*;
 
 public class CFGVisitor implements Visitor {
 

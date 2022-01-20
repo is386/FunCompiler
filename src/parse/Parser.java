@@ -1,29 +1,12 @@
 package parse;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import ast.Program;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.ASTExpr;
-import ast.expr.ArithExpr;
-import ast.expr.ClassExpr;
-import ast.expr.FieldExpr;
-import ast.expr.IntExpr;
-import ast.expr.MethodExpr;
-import ast.expr.OPExpr;
-import ast.expr.ThisExpr;
-import ast.expr.VarExpr;
-import ast.stmt.ASTStmt;
-import ast.stmt.AssignStmt;
-import ast.stmt.IfStmt;
-import ast.stmt.PrintStmt;
-import ast.stmt.ReturnStmt;
-import ast.stmt.UpdateStmt;
-import ast.stmt.WhileStmt;
+import ast.expr.*;
+import ast.stmt.*;
 
 public class Parser {
     private final Iterator<String> lines;

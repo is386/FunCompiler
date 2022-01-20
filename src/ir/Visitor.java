@@ -3,19 +3,8 @@ package ir;
 import ast.Program;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.ArithExpr;
-import ast.expr.ClassExpr;
-import ast.expr.FieldExpr;
-import ast.expr.IntExpr;
-import ast.expr.MethodExpr;
-import ast.expr.ThisExpr;
-import ast.expr.VarExpr;
-import ast.stmt.AssignStmt;
-import ast.stmt.IfStmt;
-import ast.stmt.PrintStmt;
-import ast.stmt.ReturnStmt;
-import ast.stmt.UpdateStmt;
-import ast.stmt.WhileStmt;
+import ast.expr.*;
+import ast.stmt.*;
 
 public interface Visitor {
 
