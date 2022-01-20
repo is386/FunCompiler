@@ -18,6 +18,10 @@ public class CFGVisitor implements Visitor {
 
     private int tempVarCount = 1;
     private int blockCount = 1;
+    private boolean badPtr = false;
+    private boolean badNumber = false;
+    private boolean badField = false;
+    private boolean badMethod = false;
     private BasicBlock currentBlock;
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
     private Stack<BasicBlock> blockStack = new Stack<>();
@@ -70,21 +74,31 @@ public class CFGVisitor implements Visitor {
     }
 
     private void addFailBlocks() {
-        BasicBlock fail = new BasicBlock("badPtr");
-        fail.push(new IRFail("NotAPointer"));
-        blocks.add(fail);
+        BasicBlock fail;
 
-        fail = new BasicBlock("badNumber");
-        fail.push(new IRFail("NotANumber"));
-        blocks.add(fail);
+        if (badPtr) {
+            fail = new BasicBlock("badPtr");
+            fail.push(new IRFail("NotAPointer"));
+            blocks.add(fail);
+        }
 
-        fail = new BasicBlock("badField");
-        fail.push(new IRFail("NoSuchField"));
-        blocks.add(fail);
+        if (badNumber) {
+            fail = new BasicBlock("badNumber");
+            fail.push(new IRFail("NotANumber"));
+            blocks.add(fail);
+        }
 
-        fail = new BasicBlock("badMethod");
-        fail.push(new IRFail("NoSuchMethod"));
-        blocks.add(fail);
+        if (badField) {
+            fail = new BasicBlock("badField");
+            fail.push(new IRFail("NoSuchField"));
+            blocks.add(fail);
+        }
+
+        if (badMethod) {
+            fail = new BasicBlock("badMethod");
+            fail.push(new IRFail("NoSuchMethod"));
+            blocks.add(fail);
+        }
     }
 
     @Override
@@ -163,6 +177,7 @@ public class CFGVisitor implements Visitor {
         currentBlock.setControlStmt(c);
         blocks.add(currentBlock);
         currentBlock = new BasicBlock(ifBranchName);
+        badField = true;
 
         StorePrimitive store = new StorePrimitive(tempVar, newVal);
         tempVar = getNextTemp();
@@ -209,6 +224,7 @@ public class CFGVisitor implements Visitor {
         currentBlock.setControlStmt(c);
         blocks.add(currentBlock);
         currentBlock = new BasicBlock(ifBranchName);
+        badMethod = true;
 
         CallPrimitive call = new CallPrimitive(tempVar, caller);
         for (ASTExpr e : node.getArgs()) {
@@ -268,6 +284,7 @@ public class CFGVisitor implements Visitor {
         currentBlock.setControlStmt(c);
         blocks.add(currentBlock);
         currentBlock = new BasicBlock(ifBranchName);
+        badField = true;
 
         if (returnVar == null && primitives.size() == 0) {
             returnVar = getNextTemp();
