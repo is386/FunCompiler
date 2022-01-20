@@ -43,6 +43,7 @@ public class CFGVisitor implements Visitor {
     private ArrayList<String> fields = new ArrayList<>();
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
+    private boolean storeClassToVar = false;
 
     public ArrayList<BasicBlock> getBlocks() {
         return blocks;
@@ -65,6 +66,7 @@ public class CFGVisitor implements Visitor {
             c.accept(this);
         }
         blocks.add(currentBlock);
+        blocks.add(new BasicBlock("code"));
 
         for (MethodDecl m : methods) {
             m.accept(this);
@@ -79,19 +81,30 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(AssignStmt node) {
-        node.getExpr().accept(this);
-
         Primitive var;
         if (node.getVar() == "_") {
             var = null;
         } else {
             var = new VarPrimitive(node.getVar());
+            primitives.push(var);
+        }
+
+        if (node.getExpr() instanceof ClassExpr) {
+            storeClassToVar = true;
+        }
+
+        node.getExpr().accept(this);
+
+        if (primitives.size() != 0 && primitives.peek() == var) {
+            primitives.pop();
         }
 
         IREqual ir;
-        Primitive p = primitives.pop();
-        ir = new IREqual(var, p);
-        currentBlock.push(ir);
+        if (primitives.size() != 0) {
+            Primitive p = primitives.pop();
+            ir = new IREqual(var, p);
+            currentBlock.push(ir);
+        }
     }
 
     @Override
@@ -177,33 +190,40 @@ public class CFGVisitor implements Visitor {
         int allocSpace = fieldCounts.get(node.getName());
         AllocPrimitive alloc = new AllocPrimitive(allocSpace + 2);
 
-        TempPrimitive tempVar1 = getNextTemp();
-        IRStmt ir = new IREqual(tempVar1, alloc);
+        Primitive var;
+        if (storeClassToVar) {
+            var = primitives.pop();
+            storeClassToVar = false;
+        } else {
+            var = getNextTemp();
+        }
+        IRStmt ir = new IREqual(var, alloc);
         currentBlock.push(ir);
 
         GlobalPrimitive global = new GlobalPrimitive("vtbl" + node.getName());
-        StorePrimitive store = new StorePrimitive(tempVar1, global);
+        StorePrimitive store = new StorePrimitive(var, global);
         ir = new IREqual(null, store);
         currentBlock.push(ir);
 
         ArithPrimitive arithPrimitive = new ArithPrimitive("+");
-        arithPrimitive.setPrim1(tempVar1);
+        arithPrimitive.setPrim1(var);
         arithPrimitive.setPrim2(new IntPrimitive(8));
 
-        TempPrimitive tempVar2 = getNextTemp();
-        ir = new IREqual(tempVar2, arithPrimitive);
+        TempPrimitive tempVar = getNextTemp();
+        ir = new IREqual(tempVar, arithPrimitive);
         currentBlock.push(ir);
 
         global = new GlobalPrimitive("fields" + node.getName());
-        store = new StorePrimitive(tempVar2, global);
+        store = new StorePrimitive(tempVar, global);
         ir = new IREqual(null, store);
         currentBlock.push(ir);
-        primitives.push(tempVar1);
+        primitives.push(var);
     }
 
     @Override
     public void visit(ArithExpr node) {
         ArithPrimitive arithPrimitive = new ArithPrimitive(node.getOp());
+        primitives.push(getNextTemp());
 
         node.getExpr1().accept(this);
         arithPrimitive.setPrim1(primitives.pop());
@@ -211,10 +231,19 @@ public class CFGVisitor implements Visitor {
         node.getExpr2().accept(this);
         arithPrimitive.setPrim2(primitives.pop());
 
-        TempPrimitive tempVar = getNextTemp();
-        IRStmt ir = new IREqual(tempVar, arithPrimitive);
+        Primitive var;
+        if (primitives.size() == 2) {
+            primitives.pop();
+            var = primitives.pop();
+        } else if (primitives.size() > 0) {
+            var = primitives.peek();
+        } else {
+            var = getNextTemp();
+            primitives.push(var);
+        }
+
+        IRStmt ir = new IREqual(var, arithPrimitive);
         currentBlock.push(ir);
-        primitives.push(tempVar);
     }
 
     @Override
