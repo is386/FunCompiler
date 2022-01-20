@@ -17,6 +17,10 @@ public class MethodExpr extends ASTExpr {
         this.caller = caller;
     }
 
+    public ASTExpr getCaller() {
+        return caller;
+    }
+
     public String getName() {
         return name;
     }

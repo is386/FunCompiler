@@ -123,6 +123,43 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(MethodExpr node) {
+        Primitive returnVar = null;
+        if (assignedVar != null) {
+            returnVar = assignedVar;
+            assignedVar = null;
+        }
+
+        node.getCaller().accept(this);
+        Primitive caller = primitives.pop();
+        LoadPrimitive load = new LoadPrimitive(caller);
+
+        TempPrimitive tempVar = getNextTemp();
+        IREqual ir = new IREqual(tempVar, load);
+        currentBlock.push(ir);
+
+        IntPrimitive offset = new IntPrimitive(methodNames.indexOf(node.getName()));
+        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, getElt);
+        currentBlock.push(ir);
+
+        CallPrimitive call = new CallPrimitive(tempVar, caller);
+        for (ASTExpr e : node.getArgs()) {
+            e.accept(this);
+            call.addArg(primitives.pop());
+        }
+
+        if (returnVar == null && primitives.size() == 0) {
+            returnVar = getNextTemp();
+        } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
+            returnVar = getNextTemp();
+        } else if (returnVar == null && primitives.size() != 0) {
+            returnVar = primitives.pop();
+        }
+        ir = new IREqual(returnVar, call);
+        currentBlock.push(ir);
+
+        primitives.push(returnVar);
     }
 
     @Override
@@ -139,13 +176,13 @@ public class CFGVisitor implements Visitor {
         }
 
         node.getCaller().accept(this);
-        ArithPrimitive arithPrimitive = new ArithPrimitive("+");
+        ArithPrimitive arith = new ArithPrimitive("+");
         Primitive caller = primitives.pop();
-        arithPrimitive.setPrim1(caller);
-        arithPrimitive.setPrim2(new IntPrimitive(8));
+        arith.setPrim1(caller);
+        arith.setPrim2(new IntPrimitive(8));
 
         TempPrimitive tempVar = getNextTemp();
-        IREqual ir = new IREqual(tempVar, arithPrimitive);
+        IREqual ir = new IREqual(tempVar, arith);
         currentBlock.push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
@@ -160,6 +197,8 @@ public class CFGVisitor implements Visitor {
         currentBlock.push(ir);
 
         if (returnVar == null && primitives.size() == 0) {
+            returnVar = getNextTemp();
+        } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
             returnVar = getNextTemp();
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
@@ -191,12 +230,12 @@ public class CFGVisitor implements Visitor {
         ir = new IREqual(null, store);
         currentBlock.push(ir);
 
-        ArithPrimitive arithPrimitive = new ArithPrimitive("+");
-        arithPrimitive.setPrim1(returnVar);
-        arithPrimitive.setPrim2(new IntPrimitive(8));
+        ArithPrimitive arith = new ArithPrimitive("+");
+        arith.setPrim1(returnVar);
+        arith.setPrim2(new IntPrimitive(8));
 
         TempPrimitive tempVar = getNextTemp();
-        ir = new IREqual(tempVar, arithPrimitive);
+        ir = new IREqual(tempVar, arith);
         currentBlock.push(ir);
 
         global = new GlobalPrimitive("fields" + node.getName());
@@ -208,7 +247,7 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(ArithExpr node) {
-        ArithPrimitive arithPrimitive = new ArithPrimitive(node.getOp());
+        ArithPrimitive arith = new ArithPrimitive(node.getOp());
         Primitive returnVar = null;
 
         if (assignedVar != null) {
@@ -217,18 +256,19 @@ public class CFGVisitor implements Visitor {
         }
 
         node.getExpr1().accept(this);
-        arithPrimitive.setPrim1(primitives.pop());
+        arith.setPrim1(primitives.pop());
 
         node.getExpr2().accept(this);
-        arithPrimitive.setPrim2(primitives.pop());
+        arith.setPrim2(primitives.pop());
 
         if (returnVar == null && primitives.size() == 0) {
+            returnVar = getNextTemp();
+        } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
             returnVar = getNextTemp();
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
-
-        IRStmt ir = new IREqual(returnVar, arithPrimitive);
+        IRStmt ir = new IREqual(returnVar, arith);
         currentBlock.push(ir);
         primitives.push(returnVar);
     }
