@@ -8,24 +8,19 @@ import ast.decl.MethodDecl;
 import ast.expr.*;
 import ast.stmt.*;
 import ir.primitives.*;
-import ir.stmt.IRData;
-import ir.stmt.IREqual;
-import ir.stmt.IRStmt;
+import ir.stmt.*;
 
-// TODO: Control Statements
 // TODO: Basic Block Pointers
-// TODO: Check for bad method
-// TODO: Check for bad field
 // TODO: If Statements
 // TODO: While Statements
-// TODO: Update Statements
-// TODO: Return 0 from Main
 
 public class CFGVisitor implements Visitor {
 
     private int tempVarCount = 1;
+    private int blockCount = 1;
     private BasicBlock currentBlock;
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
+    private Stack<BasicBlock> blockStack = new Stack<>();
     private Stack<Primitive> primitives = new Stack<>();
     private ArrayList<String> fields;
     private ArrayList<String> methodNames;
@@ -69,7 +64,27 @@ public class CFGVisitor implements Visitor {
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
+        currentBlock.setControlStmt(new ControlReturn(new IntPrimitive(0)));
         blocks.add(currentBlock);
+        addFailBlocks();
+    }
+
+    private void addFailBlocks() {
+        BasicBlock fail = new BasicBlock("badPtr");
+        fail.push(new IRFail("NotAPointer"));
+        blocks.add(fail);
+
+        fail = new BasicBlock("badNumber");
+        fail.push(new IRFail("NotANumber"));
+        blocks.add(fail);
+
+        fail = new BasicBlock("badField");
+        fail.push(new IRFail("NoSuchField"));
+        blocks.add(fail);
+
+        fail = new BasicBlock("badMethod");
+        fail.push(new IRFail("NoSuchMethod"));
+        blocks.add(fail);
     }
 
     @Override
@@ -107,9 +122,8 @@ public class CFGVisitor implements Visitor {
     @Override
     public void visit(ReturnStmt node) {
         node.getExpr().accept(this);
-        ReturnPrimitive r = new ReturnPrimitive(primitives.pop());
-        IRStmt ir = new IREqual(null, r);
-        currentBlock.push(ir);
+        ControlStmt c = new ControlReturn(primitives.pop());
+        currentBlock.setControlStmt(c);
     }
 
     @Override
@@ -118,22 +132,6 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(UpdateStmt node) {
-        // Primitive var;
-        // if (node.getVar() == "_") {
-        // var = null;
-        // } else {
-        // var = new VarPrimitive(node.getVar());
-        // }
-        // assignedVar = var;
-        // node.getExpr().accept(this);
-
-        // IREqual ir;
-        // if (assignedVar != null) {
-        // Primitive p = primitives.pop();
-        // ir = new IREqual(var, p);
-        // currentBlock.push(ir);
-        // }
-        // assignedVar = null;
         node.getNewVal().accept(this);
         Primitive newVal = primitives.pop();
         node.getCaller().accept(this);
@@ -157,6 +155,12 @@ public class CFGVisitor implements Visitor {
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
+
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badField");
+        currentBlock.setControlStmt(c);
+        blocks.add(currentBlock);
+        currentBlock = new BasicBlock(ifBranchName);
 
         StorePrimitive store = new StorePrimitive(tempVar, newVal);
         tempVar = getNextTemp();
@@ -195,6 +199,12 @@ public class CFGVisitor implements Visitor {
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
+
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badMethod");
+        currentBlock.setControlStmt(c);
+        blocks.add(currentBlock);
+        currentBlock = new BasicBlock(ifBranchName);
 
         CallPrimitive call = new CallPrimitive(tempVar, caller);
         for (ASTExpr e : node.getArgs()) {
@@ -248,6 +258,12 @@ public class CFGVisitor implements Visitor {
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
+
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badField");
+        currentBlock.setControlStmt(c);
+        blocks.add(currentBlock);
+        currentBlock = new BasicBlock(ifBranchName);
 
         if (returnVar == null && primitives.size() == 0) {
             returnVar = getNextTemp();

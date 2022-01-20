@@ -1,5 +1,5 @@
 package ir.stmt;
 
-public abstract class IRStmt {
+public abstract class ControlStmt {
     public abstract String toString();
 }

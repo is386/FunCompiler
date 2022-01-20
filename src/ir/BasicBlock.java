@@ -2,11 +2,13 @@ package ir;
 
 import java.util.Stack;
 
+import ir.stmt.ControlStmt;
 import ir.stmt.IRStmt;
 
 public class BasicBlock {
     private final String name;
     private Stack<IRStmt> statements = new Stack<>();
+    private ControlStmt control = null;
 
     public BasicBlock(String name) {
         this.name = name;
@@ -24,10 +26,17 @@ public class BasicBlock {
         return statements.peek();
     }
 
+    public void setControlStmt(ControlStmt c) {
+        control = c;
+    }
+
     public String toString() {
         String s = name + ":\n";
         for (IRStmt ir : statements) {
             s += "    " + ir + "\n";
+        }
+        if (control != null) {
+            s += control + "\n";
         }
         return s;
     }
