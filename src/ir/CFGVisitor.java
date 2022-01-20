@@ -129,29 +129,39 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(FieldExpr node) {
+        Primitive returnVar = null;
+        if (assignedVar != null) {
+            returnVar = assignedVar;
+            assignedVar = null;
+        }
+
         node.getCaller().accept(this);
         ArithPrimitive arithPrimitive = new ArithPrimitive("+");
         Primitive caller = primitives.pop();
         arithPrimitive.setPrim1(caller);
         arithPrimitive.setPrim2(new IntPrimitive(8));
 
-        TempPrimitive returnVar = getNextTemp();
-        IREqual ir = new IREqual(returnVar, arithPrimitive);
+        TempPrimitive tempVar = getNextTemp();
+        IREqual ir = new IREqual(tempVar, arithPrimitive);
         currentBlock.push(ir);
 
-        LoadPrimitive load = new LoadPrimitive(returnVar);
-        returnVar = getNextTemp();
-        ir = new IREqual(returnVar, load);
+        LoadPrimitive load = new LoadPrimitive(tempVar);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, load);
         currentBlock.push(ir);
 
         IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
-        GetEltPrimitive getElt = new GetEltPrimitive(returnVar, offset);
-        returnVar = getNextTemp();
-        ir = new IREqual(returnVar, getElt);
+        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
 
-        getElt = new GetEltPrimitive(caller, returnVar);
-        returnVar = getNextTemp();
+        if (returnVar == null && primitives.size() == 0) {
+            returnVar = getNextTemp();
+        } else if (returnVar == null && primitives.size() != 0) {
+            returnVar = primitives.pop();
+        }
+        getElt = new GetEltPrimitive(caller, tempVar);
         ir = new IREqual(returnVar, getElt);
         currentBlock.push(ir);
 
