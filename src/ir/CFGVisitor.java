@@ -12,6 +12,14 @@ import ir.stmt.IRData;
 import ir.stmt.IREqual;
 import ir.stmt.IRStmt;
 
+// TODO: Control Statements
+// TODO: Basic Block Pointers
+// TODO: Check for bad method
+// TODO: Check for bad field
+// TODO: If Statements
+// TODO: While Statements
+// TODO: Update Statements
+
 public class CFGVisitor implements Visitor {
 
     private int tempVarCount = 1;

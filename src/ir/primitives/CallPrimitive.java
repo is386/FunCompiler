@@ -32,6 +32,12 @@ public class CallPrimitive extends Primitive {
 
     @Override
     public String toString() {
-        return "call " + codeAddress + " " + caller + " " + args;
+        String s = "call(" + codeAddress + ", " + caller;
+        if (!args.isEmpty()) {
+            for (Primitive p : args) {
+                s += ", " + p;
+            }
+        }
+        return s + ")";
     }
 }
