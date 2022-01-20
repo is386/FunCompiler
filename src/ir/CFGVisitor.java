@@ -19,6 +19,7 @@ import ir.stmt.IRStmt;
 // TODO: If Statements
 // TODO: While Statements
 // TODO: Update Statements
+// TODO: Return 0 from Main
 
 public class CFGVisitor implements Visitor {
 
@@ -117,6 +118,50 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(UpdateStmt node) {
+        // Primitive var;
+        // if (node.getVar() == "_") {
+        // var = null;
+        // } else {
+        // var = new VarPrimitive(node.getVar());
+        // }
+        // assignedVar = var;
+        // node.getExpr().accept(this);
+
+        // IREqual ir;
+        // if (assignedVar != null) {
+        // Primitive p = primitives.pop();
+        // ir = new IREqual(var, p);
+        // currentBlock.push(ir);
+        // }
+        // assignedVar = null;
+        node.getNewVal().accept(this);
+        Primitive newVal = primitives.pop();
+        node.getCaller().accept(this);
+        Primitive caller = primitives.pop();
+
+        ArithPrimitive arith = new ArithPrimitive("+");
+        arith.setPrim1(caller);
+        arith.setPrim2(new IntPrimitive(8));
+
+        TempPrimitive tempVar = getNextTemp();
+        IREqual ir = new IREqual(tempVar, arith);
+        currentBlock.push(ir);
+
+        LoadPrimitive load = new LoadPrimitive(tempVar);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, load);
+        currentBlock.push(ir);
+
+        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
+        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, getElt);
+        currentBlock.push(ir);
+
+        StorePrimitive store = new StorePrimitive(tempVar, newVal);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, store);
+        currentBlock.push(ir);
     }
 
     @Override
@@ -316,6 +361,7 @@ public class CFGVisitor implements Visitor {
             s.accept(this);
         }
         blocks.add(currentBlock);
+        tempVarCount = 1;
     }
 
     public TempPrimitive getNextTemp() {

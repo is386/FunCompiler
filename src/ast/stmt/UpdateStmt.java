@@ -16,6 +16,18 @@ public class UpdateStmt extends ASTStmt {
         this.name = name;
     }
 
+    public ASTExpr getCaller() {
+        return caller;
+    }
+
+    public ASTExpr getNewVal() {
+        return newVal;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     @Override
     public String toString() {
         return new JSONObject()
