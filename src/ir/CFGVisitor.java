@@ -2,6 +2,7 @@ package ir;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.Stack;
 
 import ast.Program;
@@ -40,7 +41,8 @@ public class CFGVisitor implements Visitor {
     private BasicBlock currentBlock;
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
     private Stack<Primitive> primitives = new Stack<>();
-    private ArrayList<String> fields = new ArrayList<>();
+    private ArrayList<String> fields;
+    private ArrayList<String> methodNames;
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
     private Primitive assignedVar = null;
@@ -51,26 +53,28 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(Program node) {
+        LinkedHashSet<String> uniqueNames = new LinkedHashSet<>();
+
         for (ClassDecl c : node.getClasses()) {
-            for (String f : c.getFields()) {
-                if (!fields.contains(f)) {
-                    fields.add(f);
-                }
-            }
             fieldCounts.put(c.getName(), c.getFields().size());
+            uniqueNames.addAll(c.getFields());
             methods.addAll(c.getMethods());
         }
+        fields = new ArrayList<>(uniqueNames);
+        uniqueNames.clear();
 
         currentBlock = new BasicBlock("data");
         for (ClassDecl c : node.getClasses()) {
             c.accept(this);
         }
         blocks.add(currentBlock);
-        blocks.add(new BasicBlock("code"));
 
+        blocks.add(new BasicBlock("code"));
         for (MethodDecl m : methods) {
+            uniqueNames.add(m.getName());
             m.accept(this);
         }
+        methodNames = new ArrayList<>(uniqueNames);
 
         currentBlock = new BasicBlock("main");
         for (ASTStmt s : node.getStatements()) {
@@ -253,7 +257,7 @@ public class CFGVisitor implements Visitor {
 
         ArrayList<Object> vtable = new ArrayList<>();
         for (MethodDecl m : node.getMethods()) {
-            vtable.add(m.getName());
+            vtable.add(m.getName() + m.getClassName());
         }
 
         IRData irVtable = new IRData("vtbl" + node.getName(), vtable);

@@ -12,7 +12,8 @@ import ast.stmt.ASTStmt;
 import ir.CFGVisitor;
 
 public class MethodDecl extends ASTNode {
-    private String name;
+    private final String name;
+    private String className;
     private ArrayList<String> localVars = new ArrayList<>();
     private ArrayList<String> args = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
@@ -46,12 +47,16 @@ public class MethodDecl extends ASTNode {
         return name;
     }
 
-    public void setName(String s) {
-        name = s;
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String s) {
+        className = s;
     }
 
     public String getBlockName() {
-        String blockName = name + "(%this";
+        String blockName = name + className + "(%this";
         if (args.size() != 0) {
             blockName += "%" + String.join(",%", args);
         }

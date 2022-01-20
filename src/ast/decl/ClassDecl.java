@@ -25,7 +25,7 @@ public class ClassDecl extends ASTNode {
 
     public void addMethod(MethodDecl m) {
         if (m != null) {
-            m.setName(m.getName() + name);
+            m.setClassName(name);
             methods.add(m);
         }
     }
