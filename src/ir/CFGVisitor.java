@@ -10,8 +10,6 @@ import ast.stmt.*;
 import ir.primitives.*;
 import ir.stmt.*;
 
-// TODO: Tagged Integers
-// TODO: Use Stack for Current Block
 // TODO: Basic Block Pointers
 // TODO: If Statements
 // TODO: While Statements
@@ -23,9 +21,8 @@ public class CFGVisitor implements Visitor {
     private boolean badNumber = false;
     private boolean badField = false;
     private boolean badMethod = false;
-    private BasicBlock currentBlock;
+    private Stack<BasicBlock> currentBlock = new Stack<>();
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
-    private LinkedList<BasicBlock> blockQueue = new LinkedList<>();
     private Stack<Primitive> primitives = new Stack<>();
     private ArrayList<String> fields;
     private ArrayList<String> methodNames;
@@ -54,26 +51,26 @@ public class CFGVisitor implements Visitor {
         }
         methodNames = new ArrayList<>(uniqueNames);
 
-        currentBlock = new BasicBlock("data");
+        currentBlock.push(new BasicBlock("data"));
         for (ClassDecl c : node.getClasses()) {
             c.accept(this);
         }
-        blocks.add(currentBlock);
+        blocks.add(currentBlock.pop());
 
         blocks.add(new BasicBlock("code"));
         for (MethodDecl m : methods) {
             m.accept(this);
         }
 
-        currentBlock = new BasicBlock("main");
+        currentBlock.push(new BasicBlock("main"));
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
 
-        if (currentBlock.getControlStmt() == null) {
-            currentBlock.setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
+        if (currentBlock.peek().getControlStmt() == null) {
+            currentBlock.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
         }
-        blocks.add(currentBlock);
+        blocks.add(currentBlock.pop());
         addFailBlocks();
     }
 
@@ -120,7 +117,7 @@ public class CFGVisitor implements Visitor {
         if (assignedVar != null) {
             Primitive p = primitives.pop();
             ir = new IREqual(var, p);
-            currentBlock.push(ir);
+            currentBlock.peek().push(ir);
         }
         assignedVar = null;
     }
@@ -146,13 +143,13 @@ public class CFGVisitor implements Visitor {
             and.setPrim2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, and);
-            currentBlock.push(ir);
+            currentBlock.peek().push(ir);
             ifBranchName = "l" + blockCount++;
             c = new ControlCond(tempVar, "badPtr", ifBranchName);
             badPtr = true;
-            currentBlock.setControlStmt(c);
-            blocks.add(currentBlock);
-            currentBlock = new BasicBlock(ifBranchName);
+            currentBlock.peek().setControlStmt(c);
+            blocks.add(currentBlock.pop());
+            currentBlock.push(new BasicBlock(ifBranchName));
             arith.setPrim1(tempVar);
         } else {
             arith.setPrim1(caller);
@@ -160,12 +157,12 @@ public class CFGVisitor implements Visitor {
 
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, load);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         int offset = fields.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
@@ -173,19 +170,19 @@ public class CFGVisitor implements Visitor {
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         ifBranchName = "l" + blockCount++;
         c = new ControlCond(tempVar, ifBranchName, "badField");
-        currentBlock.setControlStmt(c);
-        blocks.add(currentBlock);
-        currentBlock = new BasicBlock(ifBranchName);
+        currentBlock.peek().setControlStmt(c);
+        blocks.add(currentBlock.pop());
+        currentBlock.push(new BasicBlock(ifBranchName));
         badField = true;
 
         SetEltPrimitive setElt = new SetEltPrimitive(caller, tempVar, newVal);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, setElt);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
     }
 
     @Override
@@ -201,14 +198,14 @@ public class CFGVisitor implements Visitor {
         node.getExpr().accept(this);
         PrintPrimitive p = new PrintPrimitive(primitives.pop());
         IRStmt ir = new IREqual(null, p);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
     }
 
     @Override
     public void visit(ReturnStmt node) {
         node.getExpr().accept(this);
         ControlStmt c = new ControlReturn(primitives.pop());
-        currentBlock.setControlStmt(c);
+        currentBlock.peek().setControlStmt(c);
     }
 
     @Override
@@ -233,20 +230,20 @@ public class CFGVisitor implements Visitor {
             arith.setPrim2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, arith);
-            currentBlock.push(ir);
+            currentBlock.peek().push(ir);
             ifBranchName = "l" + blockCount++;
             c = new ControlCond(tempVar, "badPtr", ifBranchName);
             badPtr = true;
-            currentBlock.setControlStmt(c);
-            blocks.add(currentBlock);
-            currentBlock = new BasicBlock(ifBranchName);
+            currentBlock.peek().setControlStmt(c);
+            blocks.add(currentBlock.pop());
+            currentBlock.push(new BasicBlock(ifBranchName));
         }
 
         LoadPrimitive load = new LoadPrimitive(caller);
 
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, load);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         int offset = methodNames.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
@@ -254,13 +251,13 @@ public class CFGVisitor implements Visitor {
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         ifBranchName = "l" + blockCount++;
         c = new ControlCond(tempVar, ifBranchName, "badMethod");
-        currentBlock.setControlStmt(c);
-        blocks.add(currentBlock);
-        currentBlock = new BasicBlock(ifBranchName);
+        currentBlock.peek().setControlStmt(c);
+        blocks.add(currentBlock.pop());
+        currentBlock.push(new BasicBlock(ifBranchName));
         badMethod = true;
 
         CallPrimitive call = new CallPrimitive(tempVar, caller);
@@ -277,7 +274,7 @@ public class CFGVisitor implements Visitor {
             returnVar = primitives.pop();
         }
         ir = new IREqual(returnVar, call);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         primitives.push(returnVar);
     }
@@ -305,13 +302,13 @@ public class CFGVisitor implements Visitor {
             arith.setPrim2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, arith);
-            currentBlock.push(ir);
+            currentBlock.peek().push(ir);
             ifBranchName = "l" + blockCount++;
             c = new ControlCond(tempVar, "badPtr", ifBranchName);
             badPtr = true;
-            currentBlock.setControlStmt(c);
-            blocks.add(currentBlock);
-            currentBlock = new BasicBlock(ifBranchName);
+            currentBlock.peek().setControlStmt(c);
+            blocks.add(currentBlock.pop());
+            currentBlock.push(new BasicBlock(ifBranchName));
         }
 
         arith = new ArithPrimitive("+");
@@ -320,24 +317,24 @@ public class CFGVisitor implements Visitor {
 
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, load);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()), false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         ifBranchName = "l" + blockCount++;
         c = new ControlCond(tempVar, ifBranchName, "badField");
-        currentBlock.setControlStmt(c);
-        blocks.add(currentBlock);
-        currentBlock = new BasicBlock(ifBranchName);
+        currentBlock.peek().setControlStmt(c);
+        blocks.add(currentBlock.pop());
+        currentBlock.push(new BasicBlock(ifBranchName));
         badField = true;
 
         if (returnVar == null && primitives.size() == 0) {
@@ -349,7 +346,7 @@ public class CFGVisitor implements Visitor {
         }
         getElt = new GetEltPrimitive(caller, tempVar);
         ir = new IREqual(returnVar, getElt);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         primitives.push(returnVar);
     }
@@ -367,12 +364,12 @@ public class CFGVisitor implements Visitor {
             returnVar = getNextTemp();
         }
         IRStmt ir = new IREqual(returnVar, alloc);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         GlobalPrimitive global = new GlobalPrimitive("vtbl" + node.getName());
         StorePrimitive store = new StorePrimitive(returnVar, global);
         ir = new IREqual(null, store);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         ArithPrimitive arith = new ArithPrimitive("+");
         arith.setPrim1(returnVar);
@@ -380,12 +377,12 @@ public class CFGVisitor implements Visitor {
 
         TempPrimitive tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
 
         global = new GlobalPrimitive("fields" + node.getName());
         store = new StorePrimitive(tempVar, global);
         ir = new IREqual(null, store);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
         primitives.push(returnVar);
     }
 
@@ -421,7 +418,7 @@ public class CFGVisitor implements Visitor {
             returnVar = primitives.pop();
         }
         IRStmt ir = new IREqual(returnVar, arith);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
         primitives.push(returnVar);
     }
 
@@ -449,17 +446,17 @@ public class CFGVisitor implements Visitor {
 
         IRData irVtable = new IRData("vtbl" + node.getName(), vtable);
         IRData irFields = new IRData("fields" + node.getName(), fieldMap);
-        currentBlock.push(irVtable);
-        currentBlock.push(irFields);
+        currentBlock.peek().push(irVtable);
+        currentBlock.peek().push(irFields);
     }
 
     @Override
     public void visit(MethodDecl node) {
-        currentBlock = new BasicBlock(node.getBlockName());
+        currentBlock.push(new BasicBlock(node.getBlockName()));
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
-        blocks.add(currentBlock);
+        blocks.add(currentBlock.pop());
         tempVarCount = 1;
     }
 
@@ -489,12 +486,12 @@ public class CFGVisitor implements Visitor {
         arith.setPrim2(new IntPrimitive(1, false));
         Primitive tempVar = getNextTemp();
         IREqual ir = new IREqual(tempVar, arith);
-        currentBlock.push(ir);
+        currentBlock.peek().push(ir);
         String ifBranchName = "l" + blockCount++;
         ControlStmt c = new ControlCond(tempVar, ifBranchName, "badNumber");
         badNumber = true;
-        currentBlock.setControlStmt(c);
-        blocks.add(currentBlock);
-        currentBlock = new BasicBlock(ifBranchName);
+        currentBlock.peek().setControlStmt(c);
+        blocks.add(currentBlock.pop());
+        currentBlock.push(new BasicBlock(ifBranchName));
     }
 }
