@@ -39,4 +39,9 @@ public class ArithExpr extends ASTExpr {
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public Type getType() {
+        return Type.INTEGER;
+    }
 }

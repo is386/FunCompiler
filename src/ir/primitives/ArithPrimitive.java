@@ -1,5 +1,7 @@
 package ir.primitives;
 
+import ast.expr.Type;
+
 public class ArithPrimitive extends Primitive {
 
     private Primitive prim1;
@@ -21,5 +23,10 @@ public class ArithPrimitive extends Primitive {
     @Override
     public String toString() {
         return String.format("%s %s %s", prim1, op, prim2);
+    }
+
+    @Override
+    public Type getType() {
+        return Type.INTEGER;
     }
 }

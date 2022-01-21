@@ -163,7 +163,7 @@ public class CFGVisitor implements Visitor {
         arith = new ArithPrimitive("+");
         arith.setPrim2(new IntPrimitive(8));
 
-        if (caller.isVar()) {
+        if (caller.getType() == Type.UNDECLARED) {
             ArithPrimitive and = new ArithPrimitive("&");
             and.setPrim1(caller);
             and.setPrim2(new IntPrimitive(1));
@@ -237,7 +237,7 @@ public class CFGVisitor implements Visitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
 
-        if (caller.isVar()) {
+        if (caller.getType() == Type.UNDECLARED) {
             ArithPrimitive arith = new ArithPrimitive("&");
             arith.setPrim1(caller);
             arith.setPrim2(new IntPrimitive(1));
@@ -314,7 +314,7 @@ public class CFGVisitor implements Visitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
 
-        if (caller.isVar()) {
+        if (caller.getType() == Type.UNDECLARED) {
             arith = new ArithPrimitive("&");
             arith.setPrim1(caller);
             arith.setPrim2(new IntPrimitive(1));
@@ -415,10 +415,18 @@ public class CFGVisitor implements Visitor {
         }
 
         node.getExpr1().accept(this);
-        arith.setPrim1(primitives.pop());
+        Primitive prim = primitives.pop();
+        if (prim.getType() == Type.UNDECLARED) {
+            checkIfNumber(prim);
+        }
+        arith.setPrim1(prim);
 
         node.getExpr2().accept(this);
-        arith.setPrim2(primitives.pop());
+        prim = primitives.pop();
+        if (prim.getType() == Type.UNDECLARED) {
+            checkIfNumber(prim);
+        }
+        arith.setPrim2(prim);
 
         if (returnVar == null && primitives.size() == 0) {
             returnVar = getNextTemp();
@@ -473,5 +481,20 @@ public class CFGVisitor implements Visitor {
     public TempPrimitive getNextTemp() {
         String varNum = Integer.toString(tempVarCount++);
         return new TempPrimitive(varNum);
+    }
+
+    private void checkIfNumber(Primitive prim) {
+        ArithPrimitive arith = new ArithPrimitive("&");
+        arith.setPrim1(prim);
+        arith.setPrim2(new IntPrimitive(1));
+        Primitive tempVar = getNextTemp();
+        IREqual ir = new IREqual(tempVar, arith);
+        currentBlock.push(ir);
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badNumber");
+        badNumber = true;
+        currentBlock.setControlStmt(c);
+        blocks.add(currentBlock);
+        currentBlock = new BasicBlock(ifBranchName);
     }
 }

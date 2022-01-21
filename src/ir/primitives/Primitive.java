@@ -1,10 +1,17 @@
 package ir.primitives;
 
+import ast.expr.Type;
+
 public abstract class Primitive {
+    private Type type = Type.UNDECLARED;
 
     public abstract String toString();
 
-    public boolean isVar() {
-        return false;
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type t) {
+        type = t;
     }
 }

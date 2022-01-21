@@ -1,8 +1,10 @@
 package ir.primitives;
 
+import ast.expr.Type;
+
 public class VarPrimitive extends Primitive {
     private String name;
-    private String type = "either";
+    private Type type = Type.UNDECLARED;
 
     public VarPrimitive(String name) {
         this.name = name;
@@ -12,17 +14,12 @@ public class VarPrimitive extends Primitive {
         return "%" + name;
     }
 
-    public String getType() {
+    @Override
+    public Type getType() {
         return type;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setType(Type t) {
+        type = t;
     }
-
-    @Override
-    public boolean isVar() {
-        return true;
-    }
-
 }
