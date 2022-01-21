@@ -30,6 +30,18 @@ public class IfStmt extends ASTStmt {
         }
     }
 
+    public ASTExpr getCond() {
+        return cond;
+    }
+
+    public ArrayList<ASTStmt> getIfStatements() {
+        return ifStatements;
+    }
+
+    public ArrayList<ASTStmt> getElseStatements() {
+        return elseStatements;
+    }
+
     @Override
     public String toString() {
         JSONObject j = new JSONObject()

@@ -10,12 +10,13 @@ import ast.stmt.*;
 import ir.primitives.*;
 import ir.stmt.*;
 
+// TODO: Tagged Integers
+// TODO: Use Stack for Current Block
 // TODO: Basic Block Pointers
 // TODO: If Statements
 // TODO: While Statements
 
 public class CFGVisitor implements Visitor {
-
     private int tempVarCount = 1;
     private int blockCount = 1;
     private boolean badPtr = false;
@@ -24,7 +25,7 @@ public class CFGVisitor implements Visitor {
     private boolean badMethod = false;
     private BasicBlock currentBlock;
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
-    private Stack<BasicBlock> blockStack = new Stack<>();
+    private LinkedList<BasicBlock> blockQueue = new LinkedList<>();
     private Stack<Primitive> primitives = new Stack<>();
     private ArrayList<String> fields;
     private ArrayList<String> methodNames;
@@ -68,7 +69,10 @@ public class CFGVisitor implements Visitor {
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
-        currentBlock.setControlStmt(new ControlReturn(new IntPrimitive(0)));
+
+        if (currentBlock.getControlStmt() == null) {
+            currentBlock.setControlStmt(new ControlReturn(new IntPrimitive(0)));
+        }
         blocks.add(currentBlock);
         addFailBlocks();
     }
@@ -146,17 +150,39 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(UpdateStmt node) {
+        ArithPrimitive arith;
+        TempPrimitive tempVar;
+        IRStmt ir;
+        String ifBranchName;
+        ControlStmt c;
+
         node.getNewVal().accept(this);
         Primitive newVal = primitives.pop();
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
-
-        ArithPrimitive arith = new ArithPrimitive("+");
-        arith.setPrim1(caller);
+        arith = new ArithPrimitive("+");
         arith.setPrim2(new IntPrimitive(8));
 
-        TempPrimitive tempVar = getNextTemp();
-        IREqual ir = new IREqual(tempVar, arith);
+        if (caller.isVar()) {
+            ArithPrimitive and = new ArithPrimitive("&");
+            and.setPrim1(caller);
+            and.setPrim2(new IntPrimitive(1));
+            tempVar = getNextTemp();
+            ir = new IREqual(tempVar, and);
+            currentBlock.push(ir);
+            ifBranchName = "l" + blockCount++;
+            c = new ControlCond(tempVar, "badPtr", ifBranchName);
+            badPtr = true;
+            currentBlock.setControlStmt(c);
+            blocks.add(currentBlock);
+            currentBlock = new BasicBlock(ifBranchName);
+            arith.setPrim1(tempVar);
+        } else {
+            arith.setPrim1(caller);
+        }
+
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, arith);
         currentBlock.push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
@@ -172,16 +198,16 @@ public class CFGVisitor implements Visitor {
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
 
-        String ifBranchName = "l" + blockCount++;
-        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badField");
+        ifBranchName = "l" + blockCount++;
+        c = new ControlCond(tempVar, ifBranchName, "badField");
         currentBlock.setControlStmt(c);
         blocks.add(currentBlock);
         currentBlock = new BasicBlock(ifBranchName);
         badField = true;
 
-        StorePrimitive store = new StorePrimitive(tempVar, newVal);
+        SetEltPrimitive setElt = new SetEltPrimitive(caller, tempVar, newVal);
         tempVar = getNextTemp();
-        ir = new IREqual(tempVar, store);
+        ir = new IREqual(tempVar, setElt);
         currentBlock.push(ir);
     }
 
@@ -198,6 +224,11 @@ public class CFGVisitor implements Visitor {
     @Override
     public void visit(MethodExpr node) {
         Primitive returnVar = null;
+        TempPrimitive tempVar;
+        IREqual ir;
+        String ifBranchName;
+        ControlStmt c;
+
         if (assignedVar != null) {
             returnVar = assignedVar;
             assignedVar = null;
@@ -205,10 +236,26 @@ public class CFGVisitor implements Visitor {
 
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
+
+        if (caller.isVar()) {
+            ArithPrimitive arith = new ArithPrimitive("&");
+            arith.setPrim1(caller);
+            arith.setPrim2(new IntPrimitive(1));
+            tempVar = getNextTemp();
+            ir = new IREqual(tempVar, arith);
+            currentBlock.push(ir);
+            ifBranchName = "l" + blockCount++;
+            c = new ControlCond(tempVar, "badPtr", ifBranchName);
+            badPtr = true;
+            currentBlock.setControlStmt(c);
+            blocks.add(currentBlock);
+            currentBlock = new BasicBlock(ifBranchName);
+        }
+
         LoadPrimitive load = new LoadPrimitive(caller);
 
-        TempPrimitive tempVar = getNextTemp();
-        IREqual ir = new IREqual(tempVar, load);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, load);
         currentBlock.push(ir);
 
         int offset = methodNames.indexOf(node.getName());
@@ -219,8 +266,8 @@ public class CFGVisitor implements Visitor {
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
 
-        String ifBranchName = "l" + blockCount++;
-        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badMethod");
+        ifBranchName = "l" + blockCount++;
+        c = new ControlCond(tempVar, ifBranchName, "badMethod");
         currentBlock.setControlStmt(c);
         blocks.add(currentBlock);
         currentBlock = new BasicBlock(ifBranchName);
@@ -253,19 +300,41 @@ public class CFGVisitor implements Visitor {
     @Override
     public void visit(FieldExpr node) {
         Primitive returnVar = null;
+        ArithPrimitive arith;
+        TempPrimitive tempVar;
+        IRStmt ir;
+        String ifBranchName;
+        ControlStmt c;
+
         if (assignedVar != null) {
             returnVar = assignedVar;
             assignedVar = null;
         }
 
         node.getCaller().accept(this);
-        ArithPrimitive arith = new ArithPrimitive("+");
         Primitive caller = primitives.pop();
+
+        if (caller.isVar()) {
+            arith = new ArithPrimitive("&");
+            arith.setPrim1(caller);
+            arith.setPrim2(new IntPrimitive(1));
+            tempVar = getNextTemp();
+            ir = new IREqual(tempVar, arith);
+            currentBlock.push(ir);
+            ifBranchName = "l" + blockCount++;
+            c = new ControlCond(tempVar, "badPtr", ifBranchName);
+            badPtr = true;
+            currentBlock.setControlStmt(c);
+            blocks.add(currentBlock);
+            currentBlock = new BasicBlock(ifBranchName);
+        }
+
+        arith = new ArithPrimitive("+");
         arith.setPrim1(caller);
         arith.setPrim2(new IntPrimitive(8));
 
-        TempPrimitive tempVar = getNextTemp();
-        IREqual ir = new IREqual(tempVar, arith);
+        tempVar = getNextTemp();
+        ir = new IREqual(tempVar, arith);
         currentBlock.push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
@@ -279,8 +348,8 @@ public class CFGVisitor implements Visitor {
         ir = new IREqual(tempVar, getElt);
         currentBlock.push(ir);
 
-        String ifBranchName = "l" + blockCount++;
-        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badField");
+        ifBranchName = "l" + blockCount++;
+        c = new ControlCond(tempVar, ifBranchName, "badField");
         currentBlock.setControlStmt(c);
         blocks.add(currentBlock);
         currentBlock = new BasicBlock(ifBranchName);

@@ -30,6 +30,14 @@ public class BasicBlock {
         control = c;
     }
 
+    public ControlStmt getControlStmt() {
+        return control;
+    }
+
+    public String getName() {
+        return name;
+    }
+
     public String toString() {
         String s = name + ":\n";
         for (IRStmt ir : statements) {

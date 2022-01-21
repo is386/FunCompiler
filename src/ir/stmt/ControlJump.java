@@ -9,6 +9,6 @@ public class ControlJump extends ControlStmt {
 
     @Override
     public String toString() {
-        return "jump " + name;
+        return "    jump " + name;
     }
 }
