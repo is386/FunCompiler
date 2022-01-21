@@ -9,8 +9,4 @@ public abstract class ASTExpr extends ASTNode {
     public String getName() {
         return "";
     }
-
-    public Type getType() {
-        return Type.UNDECLARED;
-    }
 }

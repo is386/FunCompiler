@@ -1,7 +1,7 @@
-package ast.expr;
+package ir;
 
 public enum Type {
     UNDECLARED,
     INTEGER,
-    VARIABLE
+    THIS
 }

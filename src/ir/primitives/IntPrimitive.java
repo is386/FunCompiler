@@ -1,6 +1,6 @@
 package ir.primitives;
 
-import ast.expr.Type;
+import ir.Type;
 
 public class IntPrimitive extends Primitive {
     private int value;

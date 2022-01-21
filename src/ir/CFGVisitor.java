@@ -126,29 +126,6 @@ public class CFGVisitor implements Visitor {
     }
 
     @Override
-    public void visit(IfStmt node) {
-    }
-
-    @Override
-    public void visit(PrintStmt node) {
-        node.getExpr().accept(this);
-        PrintPrimitive p = new PrintPrimitive(primitives.pop());
-        IRStmt ir = new IREqual(null, p);
-        currentBlock.push(ir);
-    }
-
-    @Override
-    public void visit(ReturnStmt node) {
-        node.getExpr().accept(this);
-        ControlStmt c = new ControlReturn(primitives.pop());
-        currentBlock.setControlStmt(c);
-    }
-
-    @Override
-    public void visit(WhileStmt node) {
-    }
-
-    @Override
     public void visit(UpdateStmt node) {
         ArithPrimitive arith;
         TempPrimitive tempVar;
@@ -212,13 +189,26 @@ public class CFGVisitor implements Visitor {
     }
 
     @Override
-    public void visit(IntExpr node) {
-        primitives.push(new IntPrimitive(node.getValue(), true));
+    public void visit(IfStmt node) {
     }
 
     @Override
-    public void visit(VarExpr node) {
-        primitives.push(new VarPrimitive(node.getName()));
+    public void visit(WhileStmt node) {
+    }
+
+    @Override
+    public void visit(PrintStmt node) {
+        node.getExpr().accept(this);
+        PrintPrimitive p = new PrintPrimitive(primitives.pop());
+        IRStmt ir = new IREqual(null, p);
+        currentBlock.push(ir);
+    }
+
+    @Override
+    public void visit(ReturnStmt node) {
+        node.getExpr().accept(this);
+        ControlStmt c = new ControlReturn(primitives.pop());
+        currentBlock.setControlStmt(c);
     }
 
     @Override
@@ -290,11 +280,6 @@ public class CFGVisitor implements Visitor {
         currentBlock.push(ir);
 
         primitives.push(returnVar);
-    }
-
-    @Override
-    public void visit(ThisExpr node) {
-        primitives.push(new VarPrimitive("this"));
     }
 
     @Override
@@ -476,6 +461,21 @@ public class CFGVisitor implements Visitor {
         }
         blocks.add(currentBlock);
         tempVarCount = 1;
+    }
+
+    @Override
+    public void visit(IntExpr node) {
+        primitives.push(new IntPrimitive(node.getValue(), true));
+    }
+
+    @Override
+    public void visit(VarExpr node) {
+        primitives.push(new VarPrimitive(node.getName()));
+    }
+
+    @Override
+    public void visit(ThisExpr node) {
+        primitives.push(new ThisPrimitive());
     }
 
     public TempPrimitive getNextTemp() {
