@@ -10,9 +10,10 @@ import ast.stmt.*;
 import ir.primitives.*;
 import ir.stmt.*;
 
-// TODO: Basic Block Pointers
 // TODO: If Statements
 // TODO: While Statements
+// TODO: Basic Block Pointers
+// TODO: SSA
 
 public class CFGVisitor implements Visitor {
     private int tempVarCount = 1;
@@ -29,6 +30,7 @@ public class CFGVisitor implements Visitor {
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
     private Primitive assignedVar = null;
+    private IntPrimitive addMask = new IntPrimitive((long) (Math.pow(2, 64) - 2));
 
     public ArrayList<BasicBlock> getBlocks() {
         return blocks;
@@ -135,12 +137,12 @@ public class CFGVisitor implements Visitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
         arith = new ArithPrimitive("+");
-        arith.setPrim2(new IntPrimitive(8, false));
+        arith.setOperand2(new IntPrimitive(8, false));
 
         if (caller.getType() == Type.UNDECLARED) {
             ArithPrimitive and = new ArithPrimitive("&");
-            and.setPrim1(caller);
-            and.setPrim2(new IntPrimitive(1, false));
+            and.setOperand1(caller);
+            and.setOperand2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, and);
             currentBlock.peek().push(ir);
@@ -150,9 +152,9 @@ public class CFGVisitor implements Visitor {
             currentBlock.peek().setControlStmt(c);
             blocks.add(currentBlock.pop());
             currentBlock.push(new BasicBlock(ifBranchName));
-            arith.setPrim1(tempVar);
+            arith.setOperand1(tempVar);
         } else {
-            arith.setPrim1(caller);
+            arith.setOperand1(caller);
         }
 
         tempVar = getNextTemp();
@@ -226,8 +228,8 @@ public class CFGVisitor implements Visitor {
 
         if (caller.getType() == Type.UNDECLARED) {
             ArithPrimitive arith = new ArithPrimitive("&");
-            arith.setPrim1(caller);
-            arith.setPrim2(new IntPrimitive(1, false));
+            arith.setOperand1(caller);
+            arith.setOperand2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, arith);
             currentBlock.peek().push(ir);
@@ -298,8 +300,8 @@ public class CFGVisitor implements Visitor {
 
         if (caller.getType() == Type.UNDECLARED) {
             arith = new ArithPrimitive("&");
-            arith.setPrim1(caller);
-            arith.setPrim2(new IntPrimitive(1, false));
+            arith.setOperand1(caller);
+            arith.setOperand2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, arith);
             currentBlock.peek().push(ir);
@@ -312,8 +314,8 @@ public class CFGVisitor implements Visitor {
         }
 
         arith = new ArithPrimitive("+");
-        arith.setPrim1(caller);
-        arith.setPrim2(new IntPrimitive(8, false));
+        arith.setOperand1(caller);
+        arith.setOperand2(new IntPrimitive(8, false));
 
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -372,8 +374,8 @@ public class CFGVisitor implements Visitor {
         currentBlock.peek().push(ir);
 
         ArithPrimitive arith = new ArithPrimitive("+");
-        arith.setPrim1(returnVar);
-        arith.setPrim2(new IntPrimitive(8, false));
+        arith.setOperand1(returnVar);
+        arith.setOperand2(new IntPrimitive(8, false));
 
         TempPrimitive tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -390,6 +392,7 @@ public class CFGVisitor implements Visitor {
     public void visit(ArithExpr node) {
         ArithPrimitive arith = new ArithPrimitive(node.getOp());
         Primitive returnVar = null;
+        Primitive returnVal = null;
 
         if (assignedVar != null) {
             returnVar = assignedVar;
@@ -397,18 +400,101 @@ public class CFGVisitor implements Visitor {
         }
 
         node.getExpr1().accept(this);
-        Primitive prim = primitives.pop();
-        if (prim.getType() == Type.UNDECLARED) {
-            checkIfNumber(prim);
+        Primitive operand1 = primitives.pop();
+        if (operand1.getType() == Type.UNDECLARED) {
+            checkIfNumber(operand1);
         }
-        arith.setPrim1(prim);
-
         node.getExpr2().accept(this);
-        prim = primitives.pop();
-        if (prim.getType() == Type.UNDECLARED) {
-            checkIfNumber(prim);
+        Primitive operand2 = primitives.pop();
+        if (operand2.getType() == Type.UNDECLARED) {
+            checkIfNumber(operand2);
         }
-        arith.setPrim2(prim);
+
+        arith.setOperand1(operand1);
+        arith.setOperand2(operand2);
+
+        Primitive tempVar;
+        Primitive tempVar2;
+        ArithPrimitive arith2;
+        IRStmt ir;
+        switch (node.getOp()) {
+            case "+":
+                tempVar = getNextTemp();
+                arith2 = new ArithPrimitive("&");
+                arith2.setOperand1(operand1);
+                arith2.setOperand2(addMask);
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+                arith.setOperand1(tempVar);
+                break;
+            case "-":
+                tempVar = getNextTemp();
+                ir = new IREqual(tempVar, arith);
+                currentBlock.peek().push(ir);
+                arith2 = new ArithPrimitive("+");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(new IntPrimitive(1, false));
+                returnVal = arith2;
+                break;
+            case "*":
+                tempVar = getNextTemp();
+                arith2 = new ArithPrimitive("/");
+                arith2.setOperand1(operand1);
+                arith2.setOperand2(new IntPrimitive(2, false));
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+
+                tempVar2 = getNextTemp();
+                arith2 = new ArithPrimitive("/");
+                arith2.setOperand1(operand2);
+                arith2.setOperand2(new IntPrimitive(2, false));
+                ir = new IREqual(tempVar2, arith2);
+                currentBlock.peek().push(ir);
+
+                arith2 = new ArithPrimitive("*");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(tempVar2);
+                tempVar = getNextTemp();
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+
+                arith2 = new ArithPrimitive("+");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(new IntPrimitive(1, false));
+                returnVal = arith2;
+                break;
+            case "/":
+                tempVar = getNextTemp();
+                arith2 = new ArithPrimitive("/");
+                arith2.setOperand1(operand1);
+                arith2.setOperand2(new IntPrimitive(2, false));
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+
+                tempVar2 = getNextTemp();
+                arith2 = new ArithPrimitive("/");
+                arith2.setOperand1(operand2);
+                arith2.setOperand2(new IntPrimitive(2, false));
+                ir = new IREqual(tempVar2, arith2);
+                currentBlock.peek().push(ir);
+
+                arith2 = new ArithPrimitive("/");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(tempVar2);
+                tempVar = getNextTemp();
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+
+                arith2 = new ArithPrimitive("+");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(new IntPrimitive(1, false));
+                returnVal = arith2;
+                break;
+        }
+
+        if (returnVal == null) {
+            returnVal = arith;
+        }
 
         if (returnVar == null && primitives.size() == 0) {
             returnVar = getNextTemp();
@@ -417,7 +503,7 @@ public class CFGVisitor implements Visitor {
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
-        IRStmt ir = new IREqual(returnVar, arith);
+        ir = new IREqual(returnVar, returnVal);
         currentBlock.peek().push(ir);
         primitives.push(returnVar);
     }
@@ -482,8 +568,8 @@ public class CFGVisitor implements Visitor {
 
     private void checkIfNumber(Primitive prim) {
         ArithPrimitive arith = new ArithPrimitive("&");
-        arith.setPrim1(prim);
-        arith.setPrim2(new IntPrimitive(1, false));
+        arith.setOperand1(prim);
+        arith.setOperand2(new IntPrimitive(1, false));
         Primitive tempVar = getNextTemp();
         IREqual ir = new IREqual(tempVar, arith);
         currentBlock.peek().push(ir);

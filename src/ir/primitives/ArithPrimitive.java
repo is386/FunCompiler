@@ -4,25 +4,25 @@ import ir.Type;
 
 public class ArithPrimitive extends Primitive {
 
-    private Primitive prim1;
-    private Primitive prim2;
+    private Primitive operand1;
+    private Primitive operand2;
     private final String op;
 
     public ArithPrimitive(String op) {
         this.op = op;
     }
 
-    public void setPrim1(Primitive p) {
-        prim1 = p;
+    public void setOperand1(Primitive p) {
+        operand1 = p;
     }
 
-    public void setPrim2(Primitive p) {
-        prim2 = p;
+    public void setOperand2(Primitive p) {
+        operand2 = p;
     }
 
     @Override
     public String toString() {
-        return String.format("%s %s %s", prim1, op, prim2);
+        return String.format("%s %s %s", operand1, op, operand2);
     }
 
     @Override
