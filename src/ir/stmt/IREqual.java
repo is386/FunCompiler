@@ -11,7 +11,6 @@ public class IREqual extends IRStmt {
         this.primitive = primitive;
         if (var != null) {
             var.setType(primitive.getType());
-            System.out.println(var.getType());
         }
     }
 

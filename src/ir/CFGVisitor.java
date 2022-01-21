@@ -71,7 +71,7 @@ public class CFGVisitor implements Visitor {
         }
 
         if (currentBlock.getControlStmt() == null) {
-            currentBlock.setControlStmt(new ControlReturn(new IntPrimitive(0)));
+            currentBlock.setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
         }
         blocks.add(currentBlock);
         addFailBlocks();
@@ -161,12 +161,12 @@ public class CFGVisitor implements Visitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
         arith = new ArithPrimitive("+");
-        arith.setPrim2(new IntPrimitive(8));
+        arith.setPrim2(new IntPrimitive(8, false));
 
         if (caller.getType() == Type.UNDECLARED) {
             ArithPrimitive and = new ArithPrimitive("&");
             and.setPrim1(caller);
-            and.setPrim2(new IntPrimitive(1));
+            and.setPrim2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, and);
             currentBlock.push(ir);
@@ -192,7 +192,7 @@ public class CFGVisitor implements Visitor {
 
         int offset = fields.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
-        IntPrimitive offsetPrim = new IntPrimitive(offset);
+        IntPrimitive offsetPrim = new IntPrimitive(offset, false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
@@ -213,7 +213,7 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(IntExpr node) {
-        primitives.push(new IntPrimitive(node.getValue()));
+        primitives.push(new IntPrimitive(node.getValue(), true));
     }
 
     @Override
@@ -240,7 +240,7 @@ public class CFGVisitor implements Visitor {
         if (caller.getType() == Type.UNDECLARED) {
             ArithPrimitive arith = new ArithPrimitive("&");
             arith.setPrim1(caller);
-            arith.setPrim2(new IntPrimitive(1));
+            arith.setPrim2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, arith);
             currentBlock.push(ir);
@@ -260,7 +260,7 @@ public class CFGVisitor implements Visitor {
 
         int offset = methodNames.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
-        IntPrimitive offsetPrim = new IntPrimitive(offset);
+        IntPrimitive offsetPrim = new IntPrimitive(offset, false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
@@ -317,7 +317,7 @@ public class CFGVisitor implements Visitor {
         if (caller.getType() == Type.UNDECLARED) {
             arith = new ArithPrimitive("&");
             arith.setPrim1(caller);
-            arith.setPrim2(new IntPrimitive(1));
+            arith.setPrim2(new IntPrimitive(1, false));
             tempVar = getNextTemp();
             ir = new IREqual(tempVar, arith);
             currentBlock.push(ir);
@@ -331,7 +331,7 @@ public class CFGVisitor implements Visitor {
 
         arith = new ArithPrimitive("+");
         arith.setPrim1(caller);
-        arith.setPrim2(new IntPrimitive(8));
+        arith.setPrim2(new IntPrimitive(8, false));
 
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -342,7 +342,7 @@ public class CFGVisitor implements Visitor {
         ir = new IREqual(tempVar, load);
         currentBlock.push(ir);
 
-        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
+        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()), false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
         tempVar = getNextTemp();
         ir = new IREqual(tempVar, getElt);
@@ -391,7 +391,7 @@ public class CFGVisitor implements Visitor {
 
         ArithPrimitive arith = new ArithPrimitive("+");
         arith.setPrim1(returnVar);
-        arith.setPrim2(new IntPrimitive(8));
+        arith.setPrim2(new IntPrimitive(8, false));
 
         TempPrimitive tempVar = getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -486,7 +486,7 @@ public class CFGVisitor implements Visitor {
     private void checkIfNumber(Primitive prim) {
         ArithPrimitive arith = new ArithPrimitive("&");
         arith.setPrim1(prim);
-        arith.setPrim2(new IntPrimitive(1));
+        arith.setPrim2(new IntPrimitive(1, false));
         Primitive tempVar = getNextTemp();
         IREqual ir = new IREqual(tempVar, arith);
         currentBlock.push(ir);
