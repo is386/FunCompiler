@@ -17,6 +17,14 @@ public class WhileStmt extends ASTStmt {
         this.cond = cond;
     }
 
+    public ASTExpr getCond() {
+        return cond;
+    }
+
+    public ArrayList<ASTStmt> getStatements() {
+        return statements;
+    }
+
     public void addStatement(ASTStmt stmt) {
         if (stmt != null) {
             statements.add(stmt);

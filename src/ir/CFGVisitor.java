@@ -10,9 +10,7 @@ import ast.stmt.*;
 import ir.primitives.*;
 import ir.stmt.*;
 
-// TODO: If Statements
-// TODO: While Statements
-// TODO: Basic Block Pointers
+// TODO: Maybe convert return ints and print ints to normal form
 // TODO: SSA
 
 public class CFGVisitor implements Visitor {
@@ -232,6 +230,32 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(WhileStmt node) {
+        String loopName = "l" + blockCount++;
+        ControlStmt c = new ControlJump(loopName);
+        currentBlock.peek().setControlStmt(c);
+
+        BasicBlock loopHead = new BasicBlock(loopName);
+        node.getCond().accept(this);
+        blocks.add(currentBlock.pop());
+
+        Primitive condVar = primitives.pop();
+        String bodyName = "l" + blockCount++;
+        String finishName = "l" + blockCount++;
+        c = new ControlCond(condVar, bodyName, finishName);
+        loopHead.setControlStmt(c);
+        blocks.add(loopHead);
+
+        currentBlock.push(new BasicBlock(bodyName));
+        for (ASTStmt s : node.getStatements()) {
+            s.accept(this);
+        }
+
+        BasicBlock top = currentBlock.pop();
+        if (top.getControlStmt() == null) {
+            top.setControlStmt(new ControlJump(loopName));
+        }
+        blocks.add(top);
+        currentBlock.push(new BasicBlock(finishName));
     }
 
     @Override
