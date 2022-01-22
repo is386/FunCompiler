@@ -458,6 +458,13 @@ public class CFGVisitor implements Visitor {
                 ir = new IREqual(tempVar, arith2);
                 currentBlock.peek().push(ir);
 
+                arith2 = new ArithPrimitive("*");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(new IntPrimitive(2, false));
+                tempVar = getNextTemp();
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+
                 arith2 = new ArithPrimitive("+");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(new IntPrimitive(1, false));
@@ -481,6 +488,13 @@ public class CFGVisitor implements Visitor {
                 arith2 = new ArithPrimitive("/");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(tempVar2);
+                tempVar = getNextTemp();
+                ir = new IREqual(tempVar, arith2);
+                currentBlock.peek().push(ir);
+
+                arith2 = new ArithPrimitive("*");
+                arith2.setOperand1(tempVar);
+                arith2.setOperand2(new IntPrimitive(2, false));
                 tempVar = getNextTemp();
                 ir = new IREqual(tempVar, arith2);
                 currentBlock.peek().push(ir);
