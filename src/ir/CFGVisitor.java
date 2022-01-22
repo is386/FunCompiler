@@ -32,10 +32,6 @@ public class CFGVisitor implements Visitor {
     private Primitive assignedVar = null;
     private IntPrimitive addMask = new IntPrimitive("18446744073709551614");
 
-    public ArrayList<BasicBlock> getBlocks() {
-        return blocks;
-    }
-
     @Override
     public void visit(Program node) {
         LinkedHashSet<String> uniqueNames = new LinkedHashSet<>();
@@ -189,6 +185,49 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(IfStmt node) {
+        node.getCond().accept(this);
+        Primitive condVar = primitives.pop();
+
+        String ifBranchName = "l" + blockCount++;
+        String elseBranchName = "l" + blockCount++;
+        String jumpBlockName = "l" + blockCount;
+
+        ControlStmt c;
+        if (!node.getElseStatements().isEmpty()) {
+            c = new ControlCond(condVar, ifBranchName, elseBranchName);
+            blockCount++;
+        } else {
+            jumpBlockName = elseBranchName;
+            c = new ControlCond(condVar, ifBranchName, jumpBlockName);
+        }
+
+        currentBlock.peek().setControlStmt(c);
+        blocks.add(currentBlock.pop());
+
+        BasicBlock nextBlock = new BasicBlock(jumpBlockName);
+        currentBlock.push(nextBlock);
+
+        currentBlock.push(new BasicBlock(ifBranchName));
+        for (ASTStmt s : node.getIfStatements()) {
+            s.accept(this);
+        }
+        BasicBlock top = currentBlock.pop();
+        if (top.getControlStmt() == null) {
+            top.setControlStmt(new ControlJump(jumpBlockName));
+        }
+        blocks.add(top);
+
+        if (!node.getElseStatements().isEmpty()) {
+            currentBlock.push(new BasicBlock(elseBranchName));
+            for (ASTStmt s : node.getElseStatements()) {
+                s.accept(this);
+            }
+            top = currentBlock.pop();
+            if (top.getControlStmt() == null) {
+                top.setControlStmt(new ControlJump(jumpBlockName));
+            }
+            blocks.add(top);
+        }
     }
 
     @Override
@@ -575,7 +614,11 @@ public class CFGVisitor implements Visitor {
         primitives.push(new ThisPrimitive());
     }
 
-    public TempPrimitive getNextTemp() {
+    public ArrayList<BasicBlock> getBlocks() {
+        return blocks;
+    }
+
+    private TempPrimitive getNextTemp() {
         String varNum = Integer.toString(tempVarCount++);
         return new TempPrimitive(varNum);
     }
