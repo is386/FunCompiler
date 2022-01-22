@@ -4,17 +4,19 @@ import ir.Type;
 
 public class IntPrimitive extends Primitive {
     private long value;
+    private String strValue;
 
     public IntPrimitive(int value, boolean tagged) {
         this.value = tagged ? (value << 1) + 1 : value;
+        this.strValue = Long.toString(this.value);
     }
 
-    public IntPrimitive(long value) {
-        this.value = value;
+    public IntPrimitive(String value) {
+        this.strValue = value;
     }
 
     public String toString() {
-        return Long.toString(value);
+        return strValue;
     }
 
     @Override

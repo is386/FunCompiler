@@ -30,7 +30,7 @@ public class CFGVisitor implements Visitor {
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
     private Primitive assignedVar = null;
-    private IntPrimitive addMask = new IntPrimitive((long) (Math.pow(2, 64) - 2));
+    private IntPrimitive addMask = new IntPrimitive("18446744073709551614");
 
     public ArrayList<BasicBlock> getBlocks() {
         return blocks;
