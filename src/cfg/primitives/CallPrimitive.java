@@ -1,4 +1,4 @@
-package ir.primitives;
+package cfg.primitives;
 
 import java.util.ArrayList;
 

@@ -1,4 +1,4 @@
-package ir.primitives;
+package cfg.primitives;
 
 public class PrintPrimitive extends Primitive {
     private final Primitive primitive;

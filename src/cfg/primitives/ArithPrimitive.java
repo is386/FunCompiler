@@ -1,6 +1,6 @@
-package ir.primitives;
+package cfg.primitives;
 
-import ir.Type;
+import cfg.Type;
 
 public class ArithPrimitive extends Primitive {
 

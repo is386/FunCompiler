@@ -1,4 +1,4 @@
-package ir.primitives;
+package cfg.primitives;
 
 public class GlobalPrimitive extends Primitive {
     private String name;

@@ -1,6 +1,6 @@
-package ir.primitives;
+package cfg.primitives;
 
-import ir.Type;
+import cfg.Type;
 
 public abstract class Primitive {
     private Type type = Type.UNDECLARED;

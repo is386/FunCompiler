@@ -1,6 +1,6 @@
-package ir.stmt;
+package cfg.stmt;
 
-import ir.primitives.Primitive;
+import cfg.primitives.Primitive;
 
 public class IREqual extends IRStmt {
     private Primitive var;

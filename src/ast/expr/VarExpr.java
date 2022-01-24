@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class VarExpr extends ASTExpr {
     private final String name;

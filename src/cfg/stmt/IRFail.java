@@ -1,4 +1,4 @@
-package ir.stmt;
+package cfg.stmt;
 
 public class IRFail extends IRStmt {
     private final String failType;

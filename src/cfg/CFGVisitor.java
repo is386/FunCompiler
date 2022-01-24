@@ -1,4 +1,4 @@
-package ir;
+package cfg;
 
 import java.util.*;
 
@@ -7,10 +7,11 @@ import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
 import ast.expr.*;
 import ast.stmt.*;
-import ir.primitives.*;
-import ir.stmt.*;
+import cfg.primitives.*;
+import cfg.stmt.*;
 
-// TODO: Maybe convert return ints and print ints to normal form
+// TODO: Tag check before print
+// TODO: Tag check before if/while conds
 // TODO: SSA
 
 public class CFGVisitor implements Visitor {

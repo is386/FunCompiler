@@ -1,4 +1,4 @@
-package ir.stmt;
+package cfg.stmt;
 
 public class ControlJump extends ControlStmt {
     private final String name;

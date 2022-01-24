@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.ASTNode;
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class ClassDecl extends ASTNode {
     private final String name;

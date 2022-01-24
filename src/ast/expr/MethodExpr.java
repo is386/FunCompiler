@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class MethodExpr extends ASTExpr {
     private final String name;

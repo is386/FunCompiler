@@ -9,7 +9,7 @@ import ast.ASTNode;
 import ast.expr.ASTExpr;
 import ast.expr.MethodExpr;
 import ast.stmt.ASTStmt;
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class MethodDecl extends ASTNode {
     private final String name;

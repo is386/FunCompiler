@@ -1,4 +1,4 @@
-package ir;
+package cfg;
 
 public enum Type {
     UNDECLARED,

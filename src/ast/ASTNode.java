@@ -1,6 +1,6 @@
 package ast;
 
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public abstract class ASTNode {
     public abstract void accept(CFGVisitor visitor);

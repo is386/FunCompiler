@@ -1,6 +1,6 @@
 package ast.expr;
 
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class OPExpr extends ASTExpr {
 

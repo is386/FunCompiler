@@ -1,4 +1,4 @@
-package ir.primitives;
+package cfg.primitives;
 
 public class AllocPrimitive extends Primitive {
     private final int space;

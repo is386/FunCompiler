@@ -1,4 +1,4 @@
-package ir.stmt;
+package cfg.stmt;
 
 import java.util.ArrayList;
 

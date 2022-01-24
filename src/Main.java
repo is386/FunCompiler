@@ -2,8 +2,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import ast.Program;
-import ir.BasicBlock;
-import ir.CFGVisitor;
+import cfg.BasicBlock;
+import cfg.CFGVisitor;
+import cfg.stmt.ControlCond;
+import cfg.stmt.ControlJump;
+import cfg.stmt.ControlReturn;
 import parse.Parser;
 
 public class Main {
@@ -26,7 +29,16 @@ public class Main {
         CFGVisitor cfgVisitor = new CFGVisitor();
         program.accept(cfgVisitor);
         for (BasicBlock b : cfgVisitor.getBlocks()) {
-            System.out.println(b);
+            if (b.getControlStmt() instanceof ControlCond) {
+                System.out.println("cond");
+            } else if (b.getControlStmt() instanceof ControlJump) {
+                System.out.println("jump");
+            } else if (b.getControlStmt() instanceof ControlReturn) {
+                System.out.println("return");
+            }
         }
+        // for (BasicBlock b : cfgVisitor.getBlocks()) {
+        // System.out.println(b);
+        // }
     }
 }

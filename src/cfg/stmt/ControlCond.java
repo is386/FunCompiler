@@ -1,6 +1,6 @@
-package ir.stmt;
+package cfg.stmt;
 
-import ir.primitives.Primitive;
+import cfg.primitives.Primitive;
 
 public class ControlCond extends ControlStmt {
     private final Primitive cond;

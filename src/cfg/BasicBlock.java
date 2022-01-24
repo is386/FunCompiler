@@ -1,14 +1,16 @@
-package ir;
+package cfg;
 
+import java.util.ArrayList;
 import java.util.Stack;
 
-import ir.stmt.ControlStmt;
-import ir.stmt.IRStmt;
+import cfg.stmt.ControlStmt;
+import cfg.stmt.IRStmt;
 
 public class BasicBlock {
     private final String name;
     private Stack<IRStmt> statements = new Stack<>();
     private ControlStmt control = null;
+    private ArrayList<BasicBlock> children = new ArrayList<>();
 
     public BasicBlock(String name) {
         this.name = name;
@@ -36,6 +38,14 @@ public class BasicBlock {
 
     public String getName() {
         return name;
+    }
+
+    public ArrayList<BasicBlock> getChildren() {
+        return children;
+    }
+
+    public void addChild(BasicBlock child) {
+        children.add(child);
     }
 
     public String toString() {

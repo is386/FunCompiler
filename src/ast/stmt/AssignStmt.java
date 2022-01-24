@@ -3,7 +3,7 @@ package ast.stmt;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class AssignStmt extends ASTStmt {
     private final String var;

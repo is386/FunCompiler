@@ -1,4 +1,4 @@
-package ir;
+package cfg;
 
 import ast.Program;
 import ast.decl.ClassDecl;

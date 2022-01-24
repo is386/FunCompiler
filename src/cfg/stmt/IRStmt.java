@@ -1,4 +1,4 @@
-package ir.stmt;
+package cfg.stmt;
 
 public abstract class IRStmt {
     public abstract String toString();

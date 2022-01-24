@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import ast.decl.ClassDecl;
 import ast.stmt.ASTStmt;
-import ir.CFGVisitor;
+import cfg.CFGVisitor;
 
 public class Program extends ASTNode {
     private ArrayList<String> localVars = new ArrayList<>();
