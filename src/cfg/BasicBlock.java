@@ -12,6 +12,7 @@ public class BasicBlock {
     private ControlStmt control = null;
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
+    private boolean isHead = false;
 
     public BasicBlock(String name) {
         this.name = name;
@@ -55,6 +56,14 @@ public class BasicBlock {
 
     public void addParent(BasicBlock parent) {
         parents.add(parent);
+    }
+
+    public void setAsHead() {
+        isHead = true;
+    }
+
+    public boolean unreachable() {
+        return parents.size() + children.size() == 0 && !isHead;
     }
 
     public String toString() {

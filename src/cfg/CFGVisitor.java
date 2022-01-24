@@ -48,18 +48,24 @@ public class CFGVisitor implements Visitor {
         }
         methodNames = new ArrayList<>(uniqueNames);
 
-        currentBlock.push(new BasicBlock("data"));
+        BasicBlock dataBlock = new BasicBlock("data");
+        dataBlock.setAsHead();
+        currentBlock.push(dataBlock);
         for (ClassDecl c : node.getClasses()) {
             c.accept(this);
         }
         blocks.add(currentBlock.pop());
 
-        blocks.add(new BasicBlock("code"));
+        BasicBlock codeBlock = new BasicBlock("code");
+        codeBlock.setAsHead();
+        blocks.add(codeBlock);
         for (MethodDecl m : methods) {
             m.accept(this);
         }
 
-        currentBlock.push(new BasicBlock("main"));
+        BasicBlock mainBlock = new BasicBlock("main");
+        mainBlock.setAsHead();
+        currentBlock.push(mainBlock);
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
@@ -616,7 +622,9 @@ public class CFGVisitor implements Visitor {
 
     @Override
     public void visit(MethodDecl node) {
-        currentBlock.push(new BasicBlock(node.getBlockName()));
+        BasicBlock methodBlock = new BasicBlock(node.getBlockName());
+        methodBlock.setAsHead();
+        currentBlock.push(methodBlock);
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }

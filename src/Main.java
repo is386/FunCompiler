@@ -33,10 +33,13 @@ public class Main {
         ArrayList<String> source = parseInput();
         Parser parser = new Parser(source);
         Program program = parser.parse();
+
         CFGVisitor cfgVisitor = new CFGVisitor();
         program.accept(cfgVisitor);
         ArrayList<BasicBlock> blocks = cfgVisitor.getBlocks();
+
         CFG.buildGraph(blocks);
+        CFG.removeUnreachable(blocks);
 
         for (BasicBlock b : blocks) {
             System.out.println(b);

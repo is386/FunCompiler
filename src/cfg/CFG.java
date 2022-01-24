@@ -1,6 +1,7 @@
 package cfg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import cfg.stmt.ControlStmt;
 
@@ -17,6 +18,18 @@ public class CFG {
                     }
                 }
             }
+        }
+    }
+
+    public static void removeUnreachable(ArrayList<BasicBlock> blocks) {
+        HashSet<BasicBlock> unreachable = new HashSet<>();
+        for (BasicBlock b : blocks) {
+            if (b.unreachable()) {
+                unreachable.add(b);
+            }
+        }
+        for (BasicBlock b : unreachable) {
+            blocks.remove(b);
         }
     }
 }
