@@ -3,10 +3,8 @@ import java.util.Scanner;
 
 import ast.Program;
 import cfg.BasicBlock;
+import cfg.CFG;
 import cfg.CFGVisitor;
-import cfg.stmt.ControlCond;
-import cfg.stmt.ControlJump;
-import cfg.stmt.ControlReturn;
 import parse.Parser;
 
 public class Main {
@@ -28,17 +26,11 @@ public class Main {
         Program program = parser.parse();
         CFGVisitor cfgVisitor = new CFGVisitor();
         program.accept(cfgVisitor);
-        for (BasicBlock b : cfgVisitor.getBlocks()) {
-            if (b.getControlStmt() instanceof ControlCond) {
-                System.out.println("cond");
-            } else if (b.getControlStmt() instanceof ControlJump) {
-                System.out.println("jump");
-            } else if (b.getControlStmt() instanceof ControlReturn) {
-                System.out.println("return");
-            }
+        ArrayList<BasicBlock> blocks = cfgVisitor.getBlocks();
+        CFG.buildGraph(blocks);
+
+        for (BasicBlock b : blocks) {
+            System.out.println(b);
         }
-        // for (BasicBlock b : cfgVisitor.getBlocks()) {
-        // System.out.println(b);
-        // }
     }
 }

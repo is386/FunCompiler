@@ -10,6 +10,7 @@ public class BasicBlock {
     private final String name;
     private Stack<IRStmt> statements = new Stack<>();
     private ControlStmt control = null;
+    private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
 
     public BasicBlock(String name) {
@@ -46,6 +47,14 @@ public class BasicBlock {
 
     public void addChild(BasicBlock child) {
         children.add(child);
+    }
+
+    public ArrayList<BasicBlock> getParents() {
+        return parents;
+    }
+
+    public void addParent(BasicBlock parent) {
+        parents.add(parent);
     }
 
     public String toString() {

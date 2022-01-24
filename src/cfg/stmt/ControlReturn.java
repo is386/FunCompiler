@@ -1,5 +1,7 @@
 package cfg.stmt;
 
+import java.util.ArrayList;
+
 import cfg.primitives.Primitive;
 
 public class ControlReturn extends ControlStmt {
@@ -12,5 +14,10 @@ public class ControlReturn extends ControlStmt {
     @Override
     public String toString() {
         return "    ret " + value;
+    }
+
+    @Override
+    public ArrayList<String> getBranchNames() {
+        return new ArrayList<>();
     }
 }

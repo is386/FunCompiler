@@ -1,5 +1,7 @@
 package cfg.stmt;
 
+import java.util.ArrayList;
+
 import cfg.primitives.Primitive;
 
 public class ControlCond extends ControlStmt {
@@ -16,5 +18,13 @@ public class ControlCond extends ControlStmt {
     @Override
     public String toString() {
         return "    if " + cond + " then " + ifBranch + " else " + elseBranch;
+    }
+
+    @Override
+    public ArrayList<String> getBranchNames() {
+        ArrayList<String> a = new ArrayList<>();
+        a.add(ifBranch);
+        a.add(elseBranch);
+        return a;
     }
 }
