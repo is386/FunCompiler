@@ -3,6 +3,7 @@ package cfg.stmt;
 import java.util.ArrayList;
 
 import cfg.primitives.Primitive;
+import ssa.SSAVisitor;
 
 public class ControlReturn extends ControlStmt {
     private final Primitive value;
@@ -19,5 +20,10 @@ public class ControlReturn extends ControlStmt {
     @Override
     public ArrayList<String> getBranchNames() {
         return new ArrayList<>();
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

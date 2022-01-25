@@ -1,5 +1,7 @@
 package cfg.primitives;
 
+import ssa.SSAVisitor;
+
 public class StorePrimitive extends Primitive {
     private final Primitive location;
     private final Primitive value;
@@ -11,5 +13,10 @@ public class StorePrimitive extends Primitive {
 
     public String toString() {
         return String.format("store(%s, %s)", location, value);
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

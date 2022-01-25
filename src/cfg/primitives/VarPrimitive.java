@@ -1,6 +1,7 @@
 package cfg.primitives;
 
 import cfg.Type;
+import ssa.SSAVisitor;
 
 public class VarPrimitive extends Primitive {
     private String name;
@@ -21,5 +22,15 @@ public class VarPrimitive extends Primitive {
 
     public void setType(Type t) {
         type = t;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

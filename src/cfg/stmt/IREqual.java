@@ -19,6 +19,10 @@ public class IREqual extends IRStmt {
         return primitive;
     }
 
+    public Primitive getVar() {
+        return var;
+    }
+
     public void setVar(Primitive v) {
         var = v;
     }

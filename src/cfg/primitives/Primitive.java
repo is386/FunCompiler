@@ -1,6 +1,7 @@
 package cfg.primitives;
 
 import cfg.Type;
+import ssa.SSAVisitor;
 
 public abstract class Primitive {
     private Type type = Type.UNDECLARED;
@@ -14,4 +15,10 @@ public abstract class Primitive {
     public void setType(Type t) {
         type = t;
     }
+
+    public String getName() {
+        return "";
+    }
+
+    public abstract void accept(SSAVisitor visitor);
 }

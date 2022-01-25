@@ -5,6 +5,7 @@ import ast.Program;
 import cfg.BasicBlock;
 import cfg.CFGTransformer;
 import parse.Parser;
+import ssa.SSATransformer;
 
 public class Main {
     public static ArrayList<String> parseInput() {
@@ -33,12 +34,16 @@ public class Main {
         Parser parser = new Parser(source);
         Program program = parser.parse();
 
-        CFGTransformer cfgVisitor = new CFGTransformer();
-        program.accept(cfgVisitor);
-        ArrayList<BasicBlock> blocks = cfgVisitor.getBlocks();
+        CFGTransformer cfgTransformer = new CFGTransformer();
+        cfgTransformer.visit(program);
+        ArrayList<BasicBlock> cfgBlocks = cfgTransformer.getBlocks();
 
-        for (BasicBlock b : blocks) {
-            System.out.println(b);
-        }
+        SSATransformer ssaTransformer = new SSATransformer();
+        ssaTransformer.setTempVarCount(cfgTransformer.getTempVarCount());
+        ssaTransformer.visit(cfgBlocks);
+
+        // for (BasicBlock b : cfgBlocks) {
+        // System.out.println(b);
+        // }
     }
 }

@@ -2,6 +2,8 @@ package cfg.primitives;
 
 import java.util.ArrayList;
 
+import ssa.SSAVisitor;
+
 public class CallPrimitive extends Primitive {
     private final Primitive codeAddress;
     private final Primitive caller;
@@ -39,5 +41,10 @@ public class CallPrimitive extends Primitive {
             }
         }
         return s + ")";
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

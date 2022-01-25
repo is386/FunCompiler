@@ -12,7 +12,6 @@ import cfg.stmt.*;
 
 // TODO: Tag check before print
 // TODO: Tag check before if/while conds
-// TODO: SSA
 
 public class CFGTransformer implements CFGVisitor {
     private int tempVarCount = 1;
@@ -698,5 +697,9 @@ public class CFGTransformer implements CFGVisitor {
         for (BasicBlock b : unreachable) {
             blocks.remove(b);
         }
+    }
+
+    public int getTempVarCount() {
+        return tempVarCount;
     }
 }

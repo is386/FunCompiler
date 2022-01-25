@@ -1,6 +1,7 @@
 package cfg.primitives;
 
 import cfg.Type;
+import ssa.SSAVisitor;
 
 public class IntPrimitive extends Primitive {
     private long value;
@@ -22,5 +23,10 @@ public class IntPrimitive extends Primitive {
     @Override
     public Type getType() {
         return Type.INTEGER;
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

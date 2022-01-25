@@ -3,6 +3,7 @@ package cfg.stmt;
 import java.util.ArrayList;
 
 import cfg.primitives.Primitive;
+import ssa.SSAVisitor;
 
 public class ControlCond extends ControlStmt {
     private final Primitive cond;
@@ -26,5 +27,10 @@ public class ControlCond extends ControlStmt {
         a.add(ifBranch);
         a.add(elseBranch);
         return a;
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

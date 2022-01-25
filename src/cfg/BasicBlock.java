@@ -31,6 +31,10 @@ public class BasicBlock {
         return statements.peek();
     }
 
+    public Stack<IRStmt> getStatements() {
+        return statements;
+    }
+
     public void setControlStmt(ControlStmt c) {
         control = c;
     }

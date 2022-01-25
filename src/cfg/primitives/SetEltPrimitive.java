@@ -1,5 +1,7 @@
 package cfg.primitives;
 
+import ssa.SSAVisitor;
+
 public class SetEltPrimitive extends Primitive {
     private final Primitive var;
     private final Primitive location;
@@ -13,5 +15,10 @@ public class SetEltPrimitive extends Primitive {
 
     public String toString() {
         return String.format("setelt(%s, %s, %s)", var, location, value);
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

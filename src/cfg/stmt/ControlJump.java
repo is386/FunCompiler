@@ -2,6 +2,8 @@ package cfg.stmt;
 
 import java.util.ArrayList;
 
+import ssa.SSAVisitor;
+
 public class ControlJump extends ControlStmt {
     private final String name;
 
@@ -19,5 +21,10 @@ public class ControlJump extends ControlStmt {
         ArrayList<String> a = new ArrayList<>();
         a.add(name);
         return a;
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }
