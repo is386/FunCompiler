@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class ClassExpr extends ASTExpr {
     private final String name;
@@ -23,7 +23,7 @@ public class ClassExpr extends ASTExpr {
     }
 
     @Override
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 }

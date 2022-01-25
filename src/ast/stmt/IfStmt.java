@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class IfStmt extends ASTStmt {
 
@@ -64,7 +64,7 @@ public class IfStmt extends ASTStmt {
 
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 

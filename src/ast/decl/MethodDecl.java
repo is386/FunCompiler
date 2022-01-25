@@ -9,7 +9,7 @@ import ast.ASTNode;
 import ast.expr.ASTExpr;
 import ast.expr.MethodExpr;
 import ast.stmt.ASTStmt;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class MethodDecl extends ASTNode {
     private final String name;
@@ -90,7 +90,7 @@ public class MethodDecl extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 }

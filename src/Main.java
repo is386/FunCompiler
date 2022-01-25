@@ -3,8 +3,7 @@ import java.util.Scanner;
 
 import ast.Program;
 import cfg.BasicBlock;
-import cfg.CFG;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 import parse.Parser;
 
 public class Main {
@@ -34,12 +33,9 @@ public class Main {
         Parser parser = new Parser(source);
         Program program = parser.parse();
 
-        CFGVisitor cfgVisitor = new CFGVisitor();
+        CFGTransformer cfgVisitor = new CFGTransformer();
         program.accept(cfgVisitor);
         ArrayList<BasicBlock> blocks = cfgVisitor.getBlocks();
-
-        CFG.buildGraph(blocks);
-        CFG.removeUnreachable(blocks);
 
         for (BasicBlock b : blocks) {
             System.out.println(b);

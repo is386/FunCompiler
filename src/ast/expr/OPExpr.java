@@ -1,6 +1,6 @@
 package ast.expr;
 
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class OPExpr extends ASTExpr {
 
@@ -15,6 +15,6 @@ public class OPExpr extends ASTExpr {
     }
 
     @Override
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
     }
 }

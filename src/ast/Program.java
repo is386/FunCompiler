@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import ast.decl.ClassDecl;
 import ast.stmt.ASTStmt;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class Program extends ASTNode {
     private ArrayList<String> localVars = new ArrayList<>();
@@ -69,7 +69,7 @@ public class Program extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 }

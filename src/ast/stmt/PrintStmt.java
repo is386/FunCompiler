@@ -3,7 +3,7 @@ package ast.stmt;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class PrintStmt extends ASTStmt {
     private final ASTExpr expr;
@@ -23,7 +23,7 @@ public class PrintStmt extends ASTStmt {
                 .toString();
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 }

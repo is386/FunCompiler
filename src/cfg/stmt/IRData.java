@@ -2,6 +2,8 @@ package cfg.stmt;
 
 import java.util.ArrayList;
 
+import ssa.SSAVisitor;
+
 public class IRData extends IRStmt {
 
     private String name;
@@ -17,5 +19,10 @@ public class IRData extends IRStmt {
         String s = "global array " + name + ": ";
         s += data.toString().replace("[", "{ ").replace("]", " }");
         return s;
+    }
+
+    @Override
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 }

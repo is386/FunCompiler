@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class ArithExpr extends ASTExpr {
     private final ASTExpr op;
@@ -36,7 +36,7 @@ public class ArithExpr extends ASTExpr {
                 .toString();
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 }

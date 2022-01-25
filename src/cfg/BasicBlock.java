@@ -5,6 +5,7 @@ import java.util.Stack;
 
 import cfg.stmt.ControlStmt;
 import cfg.stmt.IRStmt;
+import ssa.SSAVisitor;
 
 public class BasicBlock {
     private final String name;
@@ -64,6 +65,10 @@ public class BasicBlock {
 
     public boolean unreachable() {
         return parents.size() + children.size() == 0 && !isHead;
+    }
+
+    public void accept(SSAVisitor visitor) {
+        visitor.visit(this);
     }
 
     public String toString() {

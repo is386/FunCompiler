@@ -3,7 +3,7 @@ package ast.stmt;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class AssignStmt extends ASTStmt {
     private final String var;
@@ -30,7 +30,7 @@ public class AssignStmt extends ASTStmt {
         return expr;
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 

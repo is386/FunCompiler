@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.ASTNode;
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public class ClassDecl extends ASTNode {
     private final String name;
@@ -72,7 +72,7 @@ public class ClassDecl extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGVisitor visitor) {
+    public void accept(CFGTransformer visitor) {
         visitor.visit(this);
     }
 }

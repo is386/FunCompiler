@@ -1,7 +1,7 @@
 package ast;
 
-import cfg.CFGVisitor;
+import cfg.CFGTransformer;
 
 public abstract class ASTNode {
-    public abstract void accept(CFGVisitor visitor);
+    public abstract void accept(CFGTransformer visitor);
 }
