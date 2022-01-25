@@ -38,6 +38,8 @@ public interface SSAVisitor {
 
     public void visit(LoadPrimitive node);
 
+    public void visit(PhiPrimitive node);
+
     public void visit(PrintPrimitive node);
 
     public void visit(SetEltPrimitive node);

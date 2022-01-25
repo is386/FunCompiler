@@ -13,6 +13,14 @@ public class ArithPrimitive extends Primitive {
         this.op = op;
     }
 
+    public Primitive getOperand1() {
+        return operand1;
+    }
+
+    public Primitive getOperand2() {
+        return operand2;
+    }
+
     public void setOperand1(Primitive p) {
         operand1 = p;
     }

@@ -1,6 +1,7 @@
 package ssa;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 
 import cfg.BasicBlock;
 import cfg.primitives.*;
@@ -8,8 +9,8 @@ import cfg.stmt.*;
 
 public class SSATransformer implements SSAVisitor {
 
-    private Primitive varToReplace = null;
     private int tempVarCount = 1;
+    private ArrayList<VarPrimitive> currentBlockVars = new ArrayList<>();
 
     @Override
     public void visit(ArrayList<BasicBlock> node) {
@@ -20,8 +21,27 @@ public class SSATransformer implements SSAVisitor {
 
     @Override
     public void visit(BasicBlock node) {
-        for (IRStmt ir : node.getStatements()) {
-            ir.accept(this);
+        if (node.getParents().size() >= 2 && node.getControlStmt() != null) {
+            for (IRStmt ir : node.getStatements()) {
+                ir.accept(this);
+            }
+            node.getControlStmt().accept(this);
+
+            for (VarPrimitive v : currentBlockVars) {
+                LinkedHashMap<String, Primitive> varMap = new LinkedHashMap<>();
+                for (BasicBlock p : node.getParents()) {
+                    TempPrimitive temp = getNextTemp();
+                    varMap.put(p.getName(), temp);
+                    PhiReplacer phiReplacer = new PhiReplacer(v, temp);
+                    p.accept(phiReplacer);
+                }
+                PhiPrimitive phi = new PhiPrimitive();
+                phi.setVarMap(varMap);
+                IREqual ir = new IREqual(v, phi);
+                node.insertStart(ir);
+            }
+
+            currentBlockVars = new ArrayList<>();
         }
     }
 
@@ -35,57 +55,61 @@ public class SSATransformer implements SSAVisitor {
 
     @Override
     public void visit(ControlCond node) {
-        return;
+        node.getCond().accept(this);
     }
 
     @Override
-    public void visit(ControlJump node) {
-        return;
+    public void visit(ControlReturn node) {
+        node.getValue().accept(this);
     }
 
     @Override
     public void visit(ArithPrimitive node) {
-        System.out.println(node.getName());
+        node.getOperand1().accept(this);
+        node.getOperand2().accept(this);
     }
 
     @Override
     public void visit(CallPrimitive node) {
-        System.out.println(node.getName());
+        node.getCaller().accept(this);
+        node.getCodeAddress().accept(this);
+        for (Primitive a : node.getArgs()) {
+            a.accept(this);
+        }
     }
 
     @Override
     public void visit(GetEltPrimitive node) {
-        System.out.println(node.getName());
+        node.getOffset().accept(this);
+        node.getPrimitive().accept(this);
     }
 
     @Override
     public void visit(LoadPrimitive node) {
-        System.out.println(node.getName());
+        node.getPrimitive().accept(this);
     }
 
     @Override
     public void visit(PrintPrimitive node) {
-        System.out.println(node.getName());
+        node.getPrimitive().accept(this);
     }
 
     @Override
     public void visit(SetEltPrimitive node) {
-        System.out.println(node.getName());
+        node.getVar().accept(this);
+        node.getValue().accept(this);
+        node.getLocation().accept(this);
     }
 
     @Override
     public void visit(StorePrimitive node) {
-        System.out.println(node.getName());
-    }
-
-    @Override
-    public void visit(TempPrimitive node) {
-        System.out.println(node.getName());
+        node.getLocation().accept(this);
+        node.getValue().accept(this);
     }
 
     @Override
     public void visit(VarPrimitive node) {
-        System.out.println(node.getName());
+        currentBlockVars.add(node);
     }
 
     @Override
@@ -97,7 +121,7 @@ public class SSATransformer implements SSAVisitor {
     }
 
     @Override
-    public void visit(ControlReturn node) {
+    public void visit(ControlJump node) {
     }
 
     @Override
@@ -110,6 +134,14 @@ public class SSATransformer implements SSAVisitor {
 
     @Override
     public void visit(IntPrimitive node) {
+    }
+
+    @Override
+    public void visit(PhiPrimitive node) {
+    }
+
+    @Override
+    public void visit(TempPrimitive node) {
     }
 
     @Override

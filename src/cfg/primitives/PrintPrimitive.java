@@ -9,6 +9,10 @@ public class PrintPrimitive extends Primitive {
         this.primitive = p;
     }
 
+    public Primitive getPrimitive() {
+        return primitive;
+    }
+
     public String toString() {
         return "print(" + primitive + ")";
     }

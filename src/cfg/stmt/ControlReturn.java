@@ -12,6 +12,10 @@ public class ControlReturn extends ControlStmt {
         this.value = value;
     }
 
+    public Primitive getValue() {
+        return value;
+    }
+
     @Override
     public String toString() {
         return "    ret " + value;

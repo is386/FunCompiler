@@ -11,6 +11,14 @@ public class StorePrimitive extends Primitive {
         this.value = value;
     }
 
+    public Primitive getLocation() {
+        return location;
+    }
+
+    public Primitive getValue() {
+        return value;
+    }
+
     public String toString() {
         return String.format("store(%s, %s)", location, value);
     }

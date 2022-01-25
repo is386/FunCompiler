@@ -16,6 +16,10 @@ public class ControlCond extends ControlStmt {
         this.elseBranch = elseBranch;
     }
 
+    public Primitive getCond() {
+        return cond;
+    }
+
     @Override
     public String toString() {
         return "    if " + cond + " then " + ifBranch + " else " + elseBranch;

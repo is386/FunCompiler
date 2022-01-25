@@ -13,6 +13,18 @@ public class SetEltPrimitive extends Primitive {
         this.value = value;
     }
 
+    public Primitive getVar() {
+        return var;
+    }
+
+    public Primitive getLocation() {
+        return location;
+    }
+
+    public Primitive getValue() {
+        return value;
+    }
+
     public String toString() {
         return String.format("setelt(%s, %s, %s)", var, location, value);
     }

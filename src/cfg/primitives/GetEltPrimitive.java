@@ -11,6 +11,14 @@ public class GetEltPrimitive extends Primitive {
         this.offset = offset;
     }
 
+    public Primitive getPrimitive() {
+        return primitive;
+    }
+
+    public Primitive getOffset() {
+        return offset;
+    }
+
     public String toString() {
         return String.format("getelt(%s, %s)", primitive, offset);
     }

@@ -13,14 +13,26 @@ public class BasicBlock {
     private ControlStmt control = null;
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
+    // private ArrayList<VarPrimitive> vars = new ArrayList<>();
     private boolean isHead = false;
 
     public BasicBlock(String name) {
         this.name = name;
     }
 
-    public void push(IRStmt p) {
-        statements.add(p);
+    public void push(IRStmt ir) {
+        // if (ir instanceof IREqual) {
+        // IREqual eq = (IREqual) ir;
+        // if (eq.getVar() instanceof VarPrimitive && !(eq.getVar() instanceof
+        // TempPrimitive)) {
+        // vars.add((VarPrimitive) eq.getVar());
+        // }
+        // }
+        statements.add(ir);
+    }
+
+    public void insertStart(IRStmt ir) {
+        statements.insertElementAt(ir, 0);
     }
 
     public IRStmt pop() {
@@ -31,11 +43,28 @@ public class BasicBlock {
         return statements.peek();
     }
 
+    // public ArrayList<VarPrimitive> getVars() {
+    // return vars;
+    // }
+
     public Stack<IRStmt> getStatements() {
         return statements;
     }
 
     public void setControlStmt(ControlStmt c) {
+        // if (c instanceof ControlCond) {
+        // ControlCond cc = (ControlCond) c;
+        // if (cc.getCond() instanceof VarPrimitive && !(cc.getCond() instanceof
+        // TempPrimitive)) {
+        // vars.add((VarPrimitive) cc.getCond());
+        // }
+        // } else if (c instanceof ControlReturn) {
+        // ControlReturn cc = (ControlReturn) c;
+        // if (cc.getValue() instanceof VarPrimitive && !(cc.getValue() instanceof
+        // TempPrimitive)) {
+        // vars.add((VarPrimitive) cc.getValue());
+        // }
+        // }
         control = c;
     }
 
