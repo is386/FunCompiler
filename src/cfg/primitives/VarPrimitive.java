@@ -29,6 +29,10 @@ public class VarPrimitive extends Primitive {
         return name;
     }
 
+    public void setName(String n) {
+        name = n;
+    }
+
     @Override
     public void accept(SSAVisitor visitor) {
         visitor.visit(this);

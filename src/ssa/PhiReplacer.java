@@ -10,6 +10,7 @@ public class PhiReplacer implements SSAVisitor {
 
     private VarPrimitive var;
     private TempPrimitive newVar;
+    private boolean replaced = false;
 
     public PhiReplacer(VarPrimitive var, TempPrimitive newVar) {
         this.var = var;
@@ -18,49 +19,83 @@ public class PhiReplacer implements SSAVisitor {
 
     @Override
     public void visit(BasicBlock node) {
+        replaced = false;
+        for (IRStmt ir : node.getStatements()) {
+            ir.accept(this);
+        }
     }
 
     @Override
     public void visit(IREqual node) {
+        if (node.getVar() != null) {
+            node.getVar().accept(this);
+        }
+        if (replaced) {
+            node.getPrimitive().accept(this);
+        }
     }
 
     @Override
     public void visit(ControlCond node) {
+        node.getCond().accept(this);
     }
 
     @Override
     public void visit(ControlReturn node) {
+        node.getValue().accept(this);
     }
 
     @Override
     public void visit(ArithPrimitive node) {
+        node.getOperand1().accept(this);
+        node.getOperand2().accept(this);
     }
 
     @Override
     public void visit(CallPrimitive node) {
+        node.getCaller().accept(this);
+        node.getCodeAddress().accept(this);
+        for (Primitive a : node.getArgs()) {
+            a.accept(this);
+        }
     }
 
     @Override
     public void visit(GetEltPrimitive node) {
+        node.getOffset().accept(this);
+        node.getPrimitive().accept(this);
     }
 
     @Override
     public void visit(LoadPrimitive node) {
+        node.getPrimitive().accept(this);
     }
 
     @Override
     public void visit(PrintPrimitive node) {
+        node.getPrimitive().accept(this);
     }
 
     @Override
     public void visit(SetEltPrimitive node) {
+        node.getVar().accept(this);
+        node.getValue().accept(this);
+        node.getLocation().accept(this);
     }
 
     @Override
     public void visit(StorePrimitive node) {
+        node.getLocation().accept(this);
+        node.getValue().accept(this);
     }
 
-    // Do Nothing
+    @Override
+    public void visit(VarPrimitive node) {
+        if (node.getName().equals(var.getName())) {
+            node.setName(newVar.getName());
+            replaced = true;
+        }
+    }
 
     @Override
     public void visit(ArrayList<BasicBlock> node) {
@@ -100,9 +135,5 @@ public class PhiReplacer implements SSAVisitor {
 
     @Override
     public void visit(ThisPrimitive node) {
-    }
-
-    @Override
-    public void visit(VarPrimitive node) {
     }
 }

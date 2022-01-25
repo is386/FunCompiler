@@ -42,8 +42,8 @@ public class Main {
         ssaTransformer.setTempVarCount(cfgTransformer.getTempVarCount());
         ssaTransformer.visit(cfgBlocks);
 
-        // for (BasicBlock b : cfgBlocks) {
-        // System.out.println(b);
-        // }
+        for (BasicBlock b : cfgBlocks) {
+            System.out.println(b);
+        }
     }
 }
