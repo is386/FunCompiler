@@ -11,9 +11,6 @@ import cfg.primitives.*;
 import cfg.stmt.*;
 import visitor.ASTVisitor;
 
-// TODO: Tag check before print
-// TODO: Tag check before if/while conds, shift after
-
 public class CFGBuilder implements ASTVisitor {
     private int blockCount = 1;
     private boolean badPtr = false;
@@ -314,7 +311,18 @@ public class CFGBuilder implements ASTVisitor {
     @Override
     public void visit(PrintStmt node) {
         node.getExpr().accept(this);
-        PrintPrimitive p = new PrintPrimitive(primitives.pop());
+        Primitive varToPrint = primitives.pop();
+        if (varToPrint.getType() == Type.UNDECLARED) {
+            checkIfNumber(varToPrint);
+            ArithPrimitive arith = new ArithPrimitive("/");
+            TempPrimitive tempVar = cfg.getNextTemp();
+            arith.setOperand1(varToPrint);
+            arith.setOperand2(new IntPrimitive(2, false));
+            IREqual ir = new IREqual(tempVar, arith);
+            blocks.peek().push(ir);
+            varToPrint = tempVar;
+        }
+        PrintPrimitive p = new PrintPrimitive(varToPrint);
         IRStmt ir = new IREqual(null, p);
         blocks.peek().push(ir);
     }
