@@ -6,8 +6,6 @@ import cfg.primitives.*;
 import cfg.stmt.*;
 import visitor.CFGVisitor;
 
-// TODO: Replace var not just name
-
 public class PhiReplacer implements CFGVisitor {
 
     private VarPrimitive var;

@@ -7,8 +7,6 @@ import cfg.CFGBuilder;
 import parse.Parser;
 import ssa.SSATransformer;
 
-// TODO: Flags for noopt, noSSA
-
 public class Main {
     private static boolean doOpt = true;
 

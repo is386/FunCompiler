@@ -12,7 +12,7 @@ import cfg.stmt.*;
 import visitor.ASTVisitor;
 
 // TODO: Tag check before print
-// TODO: Tag check before if/while conds
+// TODO: Tag check before if/while conds, shift after
 
 public class CFGBuilder implements ASTVisitor {
     private int blockCount = 1;
@@ -195,6 +195,9 @@ public class CFGBuilder implements ASTVisitor {
     public void visit(IfStmt node) {
         node.getCond().accept(this);
         Primitive condVar = primitives.pop();
+        if (condVar.getType() == Type.UNDECLARED) {
+            checkIfNumber(condVar);
+        }
 
         String ifBranchName = "l" + blockCount++;
         String elseBranchName = "l" + blockCount++;
@@ -240,15 +243,48 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(WhileStmt node) {
-        String loopName = "l" + blockCount++;
-        ControlStmt c = new ControlJump(loopName);
-        blocks.peek().setControlStmt(c);
-
-        BasicBlock loopHead = new BasicBlock(loopName);
         node.getCond().accept(this);
+        Primitive condVar = primitives.pop();
+        String loopName = "l" + blockCount++;
+        String jumpBack;
+        BasicBlock loopHead = new BasicBlock(loopName);
+        ControlStmt c;
+
+        if (condVar.getType() == Type.UNDECLARED) {
+            c = new ControlJump(loopName);
+            blocks.peek().setControlStmt(c);
+
+            BasicBlock b = new BasicBlock(loopName);
+            loopName = "l" + blockCount++;
+            loopHead = new BasicBlock(loopName);
+            ArithPrimitive arith = new ArithPrimitive("&");
+            arith.setOperand1(condVar);
+            arith.setOperand2(new IntPrimitive(1, false));
+            Primitive tempVar = cfg.getNextTemp();
+            IREqual ir = new IREqual(tempVar, arith);
+            primitives.push(tempVar);
+            b.push(ir);
+            jumpBack = b.getName();
+            c = new ControlCond(tempVar, loopName, "badNumber");
+            badNumber = true;
+            b.setControlStmt(c);
+            cfg.add(blocks.pop());
+            blocks.push(b);
+
+            arith = new ArithPrimitive("/");
+            tempVar = cfg.getNextTemp();
+            arith.setOperand1(condVar);
+            arith.setOperand2(new IntPrimitive(2, false));
+            ir = new IREqual(tempVar, arith);
+            loopHead.push(ir);
+            condVar = tempVar;
+        } else {
+            c = new ControlJump(loopName);
+            blocks.peek().setControlStmt(c);
+            jumpBack = loopName;
+        }
         cfg.add(blocks.pop());
 
-        Primitive condVar = primitives.pop();
         String bodyName = "l" + blockCount++;
         String finishName = "l" + blockCount++;
         c = new ControlCond(condVar, bodyName, finishName);
@@ -262,7 +298,7 @@ public class CFGBuilder implements ASTVisitor {
 
         BasicBlock top = blocks.pop();
         if (top.getControlStmt() == null) {
-            top.setControlStmt(new ControlJump(loopName));
+            top.setControlStmt(new ControlJump(jumpBack));
         }
         cfg.add(top);
         blocks.push(new BasicBlock(finishName));
