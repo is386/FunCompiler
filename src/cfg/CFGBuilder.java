@@ -197,6 +197,13 @@ public class CFGBuilder implements ASTVisitor {
         Primitive condVar = primitives.pop();
         if (condVar.getType() == Type.UNDECLARED) {
             checkIfNumber(condVar);
+            ArithPrimitive arith = new ArithPrimitive("/");
+            TempPrimitive tempVar = cfg.getNextTemp();
+            arith.setOperand1(condVar);
+            arith.setOperand2(new IntPrimitive(2, false));
+            IREqual ir = new IREqual(tempVar, arith);
+            blocks.peek().push(ir);
+            condVar = tempVar;
         }
 
         String ifBranchName = "l" + blockCount++;
