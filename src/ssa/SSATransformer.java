@@ -10,7 +10,7 @@ import cfg.primitives.*;
 import cfg.stmt.*;
 import visitor.CFGVisitor;
 
-public class SSA implements CFGVisitor {
+public class SSATransformer implements CFGVisitor {
 
     private ArrayList<VarPrimitive> currentBlockVars = new ArrayList<>();
     private HashSet<BasicBlock> visited = new HashSet<>();

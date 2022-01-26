@@ -5,14 +5,22 @@ import ast.AST;
 import cfg.CFG;
 import cfg.CFGBuilder;
 import parse.Parser;
-import ssa.SSA;
+import ssa.SSATransformer;
 
 // TODO: Flags for noopt, noSSA
-// TODO: CFG class instead of list
-// TODO: Rename and move visitors
 
 public class Main {
-    public static ArrayList<String> parseInput() {
+    private static boolean doOpt = true;
+
+    private static void parseArgs(String[] args) {
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].toLowerCase().equals("-noopt")) {
+                doOpt = false;
+            }
+        }
+    }
+
+    private static ArrayList<String> parseInput() {
         Scanner scanner = new Scanner(System.in);
         ArrayList<String> inputList = new ArrayList<>();
 
@@ -34,15 +42,17 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        parseArgs(args);
         ArrayList<String> source = parseInput();
+
         Parser parser = new Parser(source);
         AST ast = parser.parse();
 
-        CFGBuilder cfgBuilder = new CFGBuilder();
+        CFGBuilder cfgBuilder = new CFGBuilder(doOpt);
         CFG cfg = cfgBuilder.build(ast);
 
-        SSA ssa = new SSA();
-        ssa.visit(cfg);
+        SSATransformer ssaTransformer = new SSATransformer();
+        ssaTransformer.visit(cfg);
 
         System.out.println(cfg);
     }

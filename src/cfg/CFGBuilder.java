@@ -29,6 +29,11 @@ public class CFGBuilder implements ASTVisitor {
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
     private Primitive assignedVar = null;
     private IntPrimitive addMask = new IntPrimitive("18446744073709551614");
+    private boolean thisOpt;
+
+    public CFGBuilder(boolean thisOpt) {
+        this.thisOpt = thisOpt;
+    }
 
     public CFG build(AST ast) {
         visit(ast);
@@ -642,7 +647,11 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(ThisExpr node) {
-        primitives.push(new ThisPrimitive());
+        ThisPrimitive t = new ThisPrimitive();
+        if (thisOpt) {
+            t.setType(Type.THIS);
+        }
+        primitives.push(t);
     }
 
     private void checkIfNumber(Primitive prim) {
