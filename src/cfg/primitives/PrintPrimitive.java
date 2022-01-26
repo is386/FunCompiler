@@ -1,6 +1,6 @@
 package cfg.primitives;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class PrintPrimitive extends Primitive {
     private final Primitive primitive;
@@ -18,7 +18,7 @@ public class PrintPrimitive extends Primitive {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

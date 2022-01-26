@@ -1,7 +1,7 @@
 package cfg.stmt;
 
 import cfg.primitives.Primitive;
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class IREqual extends IRStmt {
     private Primitive var;
@@ -35,7 +35,7 @@ public class IREqual extends IRStmt {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

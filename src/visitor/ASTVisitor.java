@@ -1,14 +1,14 @@
-package cfg;
+package visitor;
 
-import ast.Program;
+import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
 import ast.expr.*;
 import ast.stmt.*;
 
-public interface CFGVisitor {
+public interface ASTVisitor {
 
-    public void visit(Program node);
+    public void visit(AST node);
 
     public void visit(ClassDecl node);
 

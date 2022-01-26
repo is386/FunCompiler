@@ -2,26 +2,26 @@ package cfg;
 
 import java.util.*;
 
-import ast.Program;
+import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
 import ast.expr.*;
 import ast.stmt.*;
 import cfg.primitives.*;
 import cfg.stmt.*;
+import visitor.ASTVisitor;
 
 // TODO: Tag check before print
 // TODO: Tag check before if/while conds
 
-public class CFGTransformer implements CFGVisitor {
-    private int tempVarCount = 1;
+public class CFGBuilder implements ASTVisitor {
     private int blockCount = 1;
     private boolean badPtr = false;
     private boolean badNumber = false;
     private boolean badField = false;
     private boolean badMethod = false;
-    private Stack<BasicBlock> currentBlock = new Stack<>();
-    private ArrayList<BasicBlock> blocks = new ArrayList<>();
+    private CFG cfg = new CFG();
+    private Stack<BasicBlock> blocks = new Stack<>();
     private Stack<Primitive> primitives = new Stack<>();
     private ArrayList<String> fields;
     private ArrayList<String> methodNames;
@@ -30,8 +30,15 @@ public class CFGTransformer implements CFGVisitor {
     private Primitive assignedVar = null;
     private IntPrimitive addMask = new IntPrimitive("18446744073709551614");
 
+    public CFG build(AST ast) {
+        visit(ast);
+        addFailBlocks();
+        connectBlocks();
+        return cfg;
+    }
+
     @Override
-    public void visit(Program node) {
+    public void visit(AST node) {
         LinkedHashSet<String> uniqueNames = new LinkedHashSet<>();
 
         for (ClassDecl c : node.getClasses()) {
@@ -47,34 +54,25 @@ public class CFGTransformer implements CFGVisitor {
         }
         methodNames = new ArrayList<>(uniqueNames);
 
-        BasicBlock dataBlock = new BasicBlock("data");
-        dataBlock.setAsHead();
-        currentBlock.push(dataBlock);
         for (ClassDecl c : node.getClasses()) {
             c.accept(this);
         }
-        blocks.add(currentBlock.pop());
 
-        BasicBlock codeBlock = new BasicBlock("code");
-        codeBlock.setAsHead();
-        blocks.add(codeBlock);
         for (MethodDecl m : methods) {
             m.accept(this);
         }
 
         BasicBlock mainBlock = new BasicBlock("main");
         mainBlock.setAsHead();
-        currentBlock.push(mainBlock);
+        blocks.push(mainBlock);
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
 
-        if (currentBlock.peek().getControlStmt() == null) {
-            currentBlock.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
+        if (blocks.peek().getControlStmt() == null) {
+            blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
         }
-        blocks.add(currentBlock.pop());
-        addFailBlocks();
-        connectBlocks();
+        cfg.add(blocks.pop());
     }
 
     private void addFailBlocks() {
@@ -83,25 +81,25 @@ public class CFGTransformer implements CFGVisitor {
         if (badPtr) {
             fail = new BasicBlock("badPtr");
             fail.push(new IRFail("NotAPointer"));
-            blocks.add(fail);
+            cfg.add(fail);
         }
 
         if (badNumber) {
             fail = new BasicBlock("badNumber");
             fail.push(new IRFail("NotANumber"));
-            blocks.add(fail);
+            cfg.add(fail);
         }
 
         if (badField) {
             fail = new BasicBlock("badField");
             fail.push(new IRFail("NoSuchField"));
-            blocks.add(fail);
+            cfg.add(fail);
         }
 
         if (badMethod) {
             fail = new BasicBlock("badMethod");
             fail.push(new IRFail("NoSuchMethod"));
-            blocks.add(fail);
+            cfg.add(fail);
         }
     }
 
@@ -120,7 +118,7 @@ public class CFGTransformer implements CFGVisitor {
         if (assignedVar != null) {
             Primitive p = primitives.pop();
             ir = new IREqual(var, p);
-            currentBlock.peek().push(ir);
+            blocks.peek().push(ir);
         }
         assignedVar = null;
     }
@@ -144,48 +142,48 @@ public class CFGTransformer implements CFGVisitor {
             ArithPrimitive and = new ArithPrimitive("&");
             and.setOperand1(caller);
             and.setOperand2(new IntPrimitive(1, false));
-            tempVar = getNextTemp();
+            tempVar = cfg.getNextTemp();
             ir = new IREqual(tempVar, and);
-            currentBlock.peek().push(ir);
+            blocks.peek().push(ir);
             ifBranchName = "l" + blockCount++;
             c = new ControlCond(tempVar, "badPtr", ifBranchName);
             badPtr = true;
-            currentBlock.peek().setControlStmt(c);
-            blocks.add(currentBlock.pop());
-            currentBlock.push(new BasicBlock(ifBranchName));
+            blocks.peek().setControlStmt(c);
+            cfg.add(blocks.pop());
+            blocks.push(new BasicBlock(ifBranchName));
             arith.setOperand1(tempVar);
         } else {
             arith.setOperand1(caller);
         }
 
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, load);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         int offset = fields.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
         IntPrimitive offsetPrim = new IntPrimitive(offset, false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         ifBranchName = "l" + blockCount++;
         c = new ControlCond(tempVar, ifBranchName, "badField");
-        currentBlock.peek().setControlStmt(c);
-        blocks.add(currentBlock.pop());
-        currentBlock.push(new BasicBlock(ifBranchName));
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName));
         badField = true;
 
         SetEltPrimitive setElt = new SetEltPrimitive(caller, tempVar, newVal);
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, setElt);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
     }
 
     @Override
@@ -206,32 +204,32 @@ public class CFGTransformer implements CFGVisitor {
             c = new ControlCond(condVar, ifBranchName, jumpBlockName);
         }
 
-        currentBlock.peek().setControlStmt(c);
-        blocks.add(currentBlock.pop());
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
 
         BasicBlock nextBlock = new BasicBlock(jumpBlockName);
-        currentBlock.push(nextBlock);
+        blocks.push(nextBlock);
 
-        currentBlock.push(new BasicBlock(ifBranchName));
+        blocks.push(new BasicBlock(ifBranchName));
         for (ASTStmt s : node.getIfStatements()) {
             s.accept(this);
         }
-        BasicBlock top = currentBlock.pop();
+        BasicBlock top = blocks.pop();
         if (top.getControlStmt() == null) {
             top.setControlStmt(new ControlJump(jumpBlockName));
         }
-        blocks.add(top);
+        cfg.add(top);
 
         if (!node.getElseStatements().isEmpty()) {
-            currentBlock.push(new BasicBlock(elseBranchName));
+            blocks.push(new BasicBlock(elseBranchName));
             for (ASTStmt s : node.getElseStatements()) {
                 s.accept(this);
             }
-            top = currentBlock.pop();
+            top = blocks.pop();
             if (top.getControlStmt() == null) {
                 top.setControlStmt(new ControlJump(jumpBlockName));
             }
-            blocks.add(top);
+            cfg.add(top);
         }
     }
 
@@ -239,30 +237,30 @@ public class CFGTransformer implements CFGVisitor {
     public void visit(WhileStmt node) {
         String loopName = "l" + blockCount++;
         ControlStmt c = new ControlJump(loopName);
-        currentBlock.peek().setControlStmt(c);
+        blocks.peek().setControlStmt(c);
 
         BasicBlock loopHead = new BasicBlock(loopName);
         node.getCond().accept(this);
-        blocks.add(currentBlock.pop());
+        cfg.add(blocks.pop());
 
         Primitive condVar = primitives.pop();
         String bodyName = "l" + blockCount++;
         String finishName = "l" + blockCount++;
         c = new ControlCond(condVar, bodyName, finishName);
         loopHead.setControlStmt(c);
-        blocks.add(loopHead);
+        cfg.add(loopHead);
 
-        currentBlock.push(new BasicBlock(bodyName));
+        blocks.push(new BasicBlock(bodyName));
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
 
-        BasicBlock top = currentBlock.pop();
+        BasicBlock top = blocks.pop();
         if (top.getControlStmt() == null) {
             top.setControlStmt(new ControlJump(loopName));
         }
-        blocks.add(top);
-        currentBlock.push(new BasicBlock(finishName));
+        cfg.add(top);
+        blocks.push(new BasicBlock(finishName));
     }
 
     @Override
@@ -270,14 +268,14 @@ public class CFGTransformer implements CFGVisitor {
         node.getExpr().accept(this);
         PrintPrimitive p = new PrintPrimitive(primitives.pop());
         IRStmt ir = new IREqual(null, p);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
     }
 
     @Override
     public void visit(ReturnStmt node) {
         node.getExpr().accept(this);
         ControlStmt c = new ControlReturn(primitives.pop());
-        currentBlock.peek().setControlStmt(c);
+        blocks.peek().setControlStmt(c);
     }
 
     @Override
@@ -300,36 +298,36 @@ public class CFGTransformer implements CFGVisitor {
             ArithPrimitive arith = new ArithPrimitive("&");
             arith.setOperand1(caller);
             arith.setOperand2(new IntPrimitive(1, false));
-            tempVar = getNextTemp();
+            tempVar = cfg.getNextTemp();
             ir = new IREqual(tempVar, arith);
-            currentBlock.peek().push(ir);
+            blocks.peek().push(ir);
             ifBranchName = "l" + blockCount++;
             c = new ControlCond(tempVar, "badPtr", ifBranchName);
             badPtr = true;
-            currentBlock.peek().setControlStmt(c);
-            blocks.add(currentBlock.pop());
-            currentBlock.push(new BasicBlock(ifBranchName));
+            blocks.peek().setControlStmt(c);
+            cfg.add(blocks.pop());
+            blocks.push(new BasicBlock(ifBranchName));
         }
 
         LoadPrimitive load = new LoadPrimitive(caller);
 
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, load);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         int offset = methodNames.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
         IntPrimitive offsetPrim = new IntPrimitive(offset, false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         ifBranchName = "l" + blockCount++;
         c = new ControlCond(tempVar, ifBranchName, "badMethod");
-        currentBlock.peek().setControlStmt(c);
-        blocks.add(currentBlock.pop());
-        currentBlock.push(new BasicBlock(ifBranchName));
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName));
         badMethod = true;
 
         CallPrimitive call = new CallPrimitive(tempVar, caller);
@@ -339,14 +337,14 @@ public class CFGTransformer implements CFGVisitor {
         }
 
         if (returnVar == null && primitives.size() == 0) {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
         ir = new IREqual(returnVar, call);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         primitives.push(returnVar);
     }
@@ -372,53 +370,53 @@ public class CFGTransformer implements CFGVisitor {
             arith = new ArithPrimitive("&");
             arith.setOperand1(caller);
             arith.setOperand2(new IntPrimitive(1, false));
-            tempVar = getNextTemp();
+            tempVar = cfg.getNextTemp();
             ir = new IREqual(tempVar, arith);
-            currentBlock.peek().push(ir);
+            blocks.peek().push(ir);
             ifBranchName = "l" + blockCount++;
             c = new ControlCond(tempVar, "badPtr", ifBranchName);
             badPtr = true;
-            currentBlock.peek().setControlStmt(c);
-            blocks.add(currentBlock.pop());
-            currentBlock.push(new BasicBlock(ifBranchName));
+            blocks.peek().setControlStmt(c);
+            cfg.add(blocks.pop());
+            blocks.push(new BasicBlock(ifBranchName));
         }
 
         arith = new ArithPrimitive("+");
         arith.setOperand1(caller);
         arith.setOperand2(new IntPrimitive(8, false));
 
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         LoadPrimitive load = new LoadPrimitive(tempVar);
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, load);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()), false);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
-        tempVar = getNextTemp();
+        tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         ifBranchName = "l" + blockCount++;
         c = new ControlCond(tempVar, ifBranchName, "badField");
-        currentBlock.peek().setControlStmt(c);
-        blocks.add(currentBlock.pop());
-        currentBlock.push(new BasicBlock(ifBranchName));
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName));
         badField = true;
 
         if (returnVar == null && primitives.size() == 0) {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
         getElt = new GetEltPrimitive(caller, tempVar);
         ir = new IREqual(returnVar, getElt);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         primitives.push(returnVar);
     }
@@ -433,28 +431,28 @@ public class CFGTransformer implements CFGVisitor {
             returnVar = assignedVar;
             assignedVar = null;
         } else {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         }
         IRStmt ir = new IREqual(returnVar, alloc);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         GlobalPrimitive global = new GlobalPrimitive("vtbl" + node.getName());
         StorePrimitive store = new StorePrimitive(returnVar, global);
         ir = new IREqual(null, store);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         ArithPrimitive arith = new ArithPrimitive("+");
         arith.setOperand1(returnVar);
         arith.setOperand2(new IntPrimitive(8, false));
 
-        TempPrimitive tempVar = getNextTemp();
+        TempPrimitive tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
 
         global = new GlobalPrimitive("fields" + node.getName());
         store = new StorePrimitive(tempVar, global);
         ir = new IREqual(null, store);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
         primitives.push(returnVar);
     }
 
@@ -489,51 +487,51 @@ public class CFGTransformer implements CFGVisitor {
         IRStmt ir;
         switch (node.getOp()) {
             case "+":
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 arith2 = new ArithPrimitive("&");
                 arith2.setOperand1(operand1);
                 arith2.setOperand2(addMask);
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
                 arith.setOperand1(tempVar);
                 break;
             case "-":
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 ir = new IREqual(tempVar, arith);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
                 arith2 = new ArithPrimitive("+");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(new IntPrimitive(1, false));
                 returnVal = arith2;
                 break;
             case "*":
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 arith2 = new ArithPrimitive("/");
                 arith2.setOperand1(operand1);
                 arith2.setOperand2(new IntPrimitive(2, false));
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
-                tempVar2 = getNextTemp();
+                tempVar2 = cfg.getNextTemp();
                 arith2 = new ArithPrimitive("/");
                 arith2.setOperand1(operand2);
                 arith2.setOperand2(new IntPrimitive(2, false));
                 ir = new IREqual(tempVar2, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
                 arith2 = new ArithPrimitive("*");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(tempVar2);
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
                 arith2 = new ArithPrimitive("*");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(new IntPrimitive(2, false));
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
                 arith2 = new ArithPrimitive("+");
                 arith2.setOperand1(tempVar);
@@ -541,33 +539,33 @@ public class CFGTransformer implements CFGVisitor {
                 returnVal = arith2;
                 break;
             case "/":
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 arith2 = new ArithPrimitive("/");
                 arith2.setOperand1(operand1);
                 arith2.setOperand2(new IntPrimitive(2, false));
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
-                tempVar2 = getNextTemp();
+                tempVar2 = cfg.getNextTemp();
                 arith2 = new ArithPrimitive("/");
                 arith2.setOperand1(operand2);
                 arith2.setOperand2(new IntPrimitive(2, false));
                 ir = new IREqual(tempVar2, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
                 arith2 = new ArithPrimitive("/");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(tempVar2);
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
                 arith2 = new ArithPrimitive("*");
                 arith2.setOperand1(tempVar);
                 arith2.setOperand2(new IntPrimitive(2, false));
-                tempVar = getNextTemp();
+                tempVar = cfg.getNextTemp();
                 ir = new IREqual(tempVar, arith2);
-                currentBlock.peek().push(ir);
+                blocks.peek().push(ir);
 
                 arith2 = new ArithPrimitive("+");
                 arith2.setOperand1(tempVar);
@@ -581,14 +579,14 @@ public class CFGTransformer implements CFGVisitor {
         }
 
         if (returnVar == null && primitives.size() == 0) {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
-            returnVar = getNextTemp();
+            returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
         ir = new IREqual(returnVar, returnVal);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
         primitives.push(returnVar);
     }
 
@@ -616,20 +614,20 @@ public class CFGTransformer implements CFGVisitor {
 
         IRData irVtable = new IRData("vtbl" + node.getName(), vtable);
         IRData irFields = new IRData("fields" + node.getName(), fieldMap);
-        currentBlock.peek().push(irVtable);
-        currentBlock.peek().push(irFields);
+        cfg.addToDataBlock(irVtable);
+        cfg.addToDataBlock(irFields);
     }
 
     @Override
     public void visit(MethodDecl node) {
         BasicBlock methodBlock = new BasicBlock(node.getBlockName());
         methodBlock.setAsHead();
-        currentBlock.push(methodBlock);
+        blocks.push(methodBlock);
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
-        blocks.add(currentBlock.pop());
-        tempVarCount = 1;
+        cfg.add(blocks.pop());
+        cfg.resetTempVarCount();
     }
 
     @Override
@@ -647,36 +645,27 @@ public class CFGTransformer implements CFGVisitor {
         primitives.push(new ThisPrimitive());
     }
 
-    public ArrayList<BasicBlock> getBlocks() {
-        return blocks;
-    }
-
-    private TempPrimitive getNextTemp() {
-        String varNum = Integer.toString(tempVarCount++);
-        return new TempPrimitive(varNum);
-    }
-
     private void checkIfNumber(Primitive prim) {
         ArithPrimitive arith = new ArithPrimitive("&");
         arith.setOperand1(prim);
         arith.setOperand2(new IntPrimitive(1, false));
-        Primitive tempVar = getNextTemp();
+        Primitive tempVar = cfg.getNextTemp();
         IREqual ir = new IREqual(tempVar, arith);
-        currentBlock.peek().push(ir);
+        blocks.peek().push(ir);
         String ifBranchName = "l" + blockCount++;
         ControlStmt c = new ControlCond(tempVar, ifBranchName, "badNumber");
         badNumber = true;
-        currentBlock.peek().setControlStmt(c);
-        blocks.add(currentBlock.pop());
-        currentBlock.push(new BasicBlock(ifBranchName));
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName));
     }
 
     private void connectBlocks() {
-        for (BasicBlock parent : blocks) {
+        for (BasicBlock parent : cfg.getBlocks()) {
             ControlStmt c = parent.getControlStmt();
             if (c != null) {
                 ArrayList<String> children = c.getBranchNames();
-                for (BasicBlock child : blocks) {
+                for (BasicBlock child : cfg.getBlocks()) {
                     if (children.contains(child.getName())) {
                         parent.addChild(child);
                         child.addParent(parent);
@@ -689,17 +678,13 @@ public class CFGTransformer implements CFGVisitor {
 
     private void removeUnreachable() {
         HashSet<BasicBlock> unreachable = new HashSet<>();
-        for (BasicBlock b : blocks) {
+        for (BasicBlock b : cfg.getBlocks()) {
             if (b.unreachable()) {
                 unreachable.add(b);
             }
         }
         for (BasicBlock b : unreachable) {
-            blocks.remove(b);
+            cfg.getBlocks().remove(b);
         }
-    }
-
-    public int getTempVarCount() {
-        return tempVarCount;
     }
 }

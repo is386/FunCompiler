@@ -1,9 +1,9 @@
 package cfg.stmt;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public abstract class IRStmt {
     public abstract String toString();
 
-    public abstract void accept(SSAVisitor visitor);
+    public abstract void accept(CFGVisitor visitor);
 }

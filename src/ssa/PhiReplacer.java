@@ -1,12 +1,14 @@
 package ssa;
 
-import java.util.ArrayList;
-
 import cfg.BasicBlock;
+import cfg.CFG;
 import cfg.primitives.*;
 import cfg.stmt.*;
+import visitor.CFGVisitor;
 
-public class PhiReplacer implements SSAVisitor {
+// TODO: Replace var not just name
+
+public class PhiReplacer implements CFGVisitor {
 
     private VarPrimitive var;
     private TempPrimitive newVar;
@@ -15,6 +17,10 @@ public class PhiReplacer implements SSAVisitor {
     public PhiReplacer(VarPrimitive var, TempPrimitive newVar) {
         this.var = var;
         this.newVar = newVar;
+    }
+
+    public boolean isReplaced() {
+        return replaced;
     }
 
     @Override
@@ -98,7 +104,7 @@ public class PhiReplacer implements SSAVisitor {
     }
 
     @Override
-    public void visit(ArrayList<BasicBlock> node) {
+    public void visit(CFG node) {
     }
 
     @Override

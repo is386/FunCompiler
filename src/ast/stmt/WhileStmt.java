@@ -6,7 +6,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.expr.ASTExpr;
-import cfg.CFGTransformer;
+import cfg.CFGBuilder;
 
 public class WhileStmt extends ASTStmt {
 
@@ -45,7 +45,7 @@ public class WhileStmt extends ASTStmt {
         return j.put("stmts", jStmts).toString();
     }
 
-    public void accept(CFGTransformer visitor) {
+    public void accept(CFGBuilder visitor) {
         visitor.visit(this);
     }
 }

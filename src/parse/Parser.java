@@ -2,7 +2,7 @@ package parse;
 
 import java.util.*;
 
-import ast.Program;
+import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
 import ast.expr.*;
@@ -16,9 +16,9 @@ public class Parser {
         this.lines = source.iterator();
     }
 
-    public Program parse() {
+    public AST parse() {
         String line;
-        Program p = new Program();
+        AST p = new AST();
 
         while (lines.hasNext()) {
             line = lines.next();
@@ -85,7 +85,7 @@ public class Parser {
         }
     }
 
-    private void parseProgram(Program p, String line) {
+    private void parseProgram(AST p, String line) {
         if (line.length() == 5) {
             return;
         }

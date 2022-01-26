@@ -7,14 +7,14 @@ import org.json.JSONObject;
 
 import ast.decl.ClassDecl;
 import ast.stmt.ASTStmt;
-import cfg.CFGTransformer;
+import cfg.CFGBuilder;
 
-public class Program extends ASTNode {
+public class AST extends ASTNode {
     private ArrayList<String> localVars = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
     private ArrayList<ClassDecl> classes = new ArrayList<>();
 
-    public Program() {
+    public AST() {
     }
 
     public void addVar(String lv) {
@@ -69,7 +69,7 @@ public class Program extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGTransformer visitor) {
+    public void accept(CFGBuilder visitor) {
         visitor.visit(this);
     }
 }

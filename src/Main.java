@@ -1,11 +1,15 @@
 import java.util.ArrayList;
 import java.util.Scanner;
 
-import ast.Program;
-import cfg.BasicBlock;
-import cfg.CFGTransformer;
+import ast.AST;
+import cfg.CFG;
+import cfg.CFGBuilder;
 import parse.Parser;
-import ssa.SSATransformer;
+import ssa.SSA;
+
+// TODO: Flags for noopt, noSSA
+// TODO: CFG class instead of list
+// TODO: Rename and move visitors
 
 public class Main {
     public static ArrayList<String> parseInput() {
@@ -32,18 +36,14 @@ public class Main {
     public static void main(String[] args) throws Exception {
         ArrayList<String> source = parseInput();
         Parser parser = new Parser(source);
-        Program program = parser.parse();
+        AST ast = parser.parse();
 
-        CFGTransformer cfgTransformer = new CFGTransformer();
-        cfgTransformer.visit(program);
-        ArrayList<BasicBlock> cfgBlocks = cfgTransformer.getBlocks();
+        CFGBuilder cfgBuilder = new CFGBuilder();
+        CFG cfg = cfgBuilder.build(ast);
 
-        SSATransformer ssaTransformer = new SSATransformer();
-        ssaTransformer.setTempVarCount(cfgTransformer.getTempVarCount());
-        ssaTransformer.visit(cfgBlocks);
+        SSA ssa = new SSA();
+        ssa.visit(cfg);
 
-        for (BasicBlock b : cfgBlocks) {
-            System.out.println(b);
-        }
+        System.out.println(cfg);
     }
 }

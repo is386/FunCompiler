@@ -1,20 +1,25 @@
 package ssa;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 
 import cfg.BasicBlock;
+import cfg.CFG;
 import cfg.primitives.*;
 import cfg.stmt.*;
+import visitor.CFGVisitor;
 
-public class SSATransformer implements SSAVisitor {
+public class SSA implements CFGVisitor {
 
-    private int tempVarCount = 1;
     private ArrayList<VarPrimitive> currentBlockVars = new ArrayList<>();
+    private HashSet<BasicBlock> visited = new HashSet<>();
+    private CFG cfg;
 
     @Override
-    public void visit(ArrayList<BasicBlock> node) {
-        for (BasicBlock block : node) {
+    public void visit(CFG node) {
+        cfg = node;
+        for (BasicBlock block : node.getBlocks()) {
             block.accept(this);
         }
     }
@@ -22,6 +27,8 @@ public class SSATransformer implements SSAVisitor {
     @Override
     public void visit(BasicBlock node) {
         if (node.getParents().size() >= 2 && node.getControlStmt() != null) {
+            visited = new HashSet<>();
+
             for (IRStmt ir : node.getStatements()) {
                 ir.accept(this);
             }
@@ -29,12 +36,18 @@ public class SSATransformer implements SSAVisitor {
 
             for (VarPrimitive v : currentBlockVars) {
                 LinkedHashMap<String, Primitive> varMap = new LinkedHashMap<>();
+
                 for (BasicBlock p : node.getParents()) {
-                    TempPrimitive temp = getNextTemp();
-                    varMap.put(p.getName(), temp);
+                    TempPrimitive temp = cfg.getNextTemp();
                     PhiReplacer phiReplacer = new PhiReplacer(v, temp);
-                    p.accept(phiReplacer);
+                    String pName = findLastVersion(phiReplacer, p);
+                    if (pName != null) {
+                        varMap.put(pName, temp);
+                    } else {
+                        cfg.decrementTempVarCount();
+                    }
                 }
+
                 PhiPrimitive phi = new PhiPrimitive();
                 phi.setVarMap(varMap);
                 IREqual ir = new IREqual(v, phi);
@@ -43,6 +56,28 @@ public class SSATransformer implements SSAVisitor {
 
             currentBlockVars = new ArrayList<>();
         }
+    }
+
+    public String findLastVersion(PhiReplacer phi, BasicBlock block) {
+        String blockName;
+        visited.add(block);
+        block.accept(phi);
+        if (phi.isReplaced()) {
+            return block.getName();
+        } else if (block.getParents().size() == 0) {
+            return null;
+        } else {
+            for (BasicBlock p : block.getParents()) {
+                if (visited.contains(p)) {
+                    continue;
+                }
+                blockName = findLastVersion(phi, p);
+                if (blockName != null) {
+                    return blockName;
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -146,14 +181,5 @@ public class SSATransformer implements SSAVisitor {
 
     @Override
     public void visit(ThisPrimitive node) {
-    }
-
-    public void setTempVarCount(int i) {
-        tempVarCount = i;
-    }
-
-    private TempPrimitive getNextTemp() {
-        String varNum = Integer.toString(tempVarCount++);
-        return new TempPrimitive(varNum);
     }
 }

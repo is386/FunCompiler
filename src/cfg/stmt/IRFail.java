@@ -1,6 +1,6 @@
 package cfg.stmt;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class IRFail extends IRStmt {
     private final String failType;
@@ -15,7 +15,7 @@ public class IRFail extends IRStmt {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

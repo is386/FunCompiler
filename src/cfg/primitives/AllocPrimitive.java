@@ -1,6 +1,6 @@
 package cfg.primitives;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class AllocPrimitive extends Primitive {
     private final int space;
@@ -14,7 +14,7 @@ public class AllocPrimitive extends Primitive {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

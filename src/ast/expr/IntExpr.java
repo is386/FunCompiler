@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import cfg.CFGTransformer;
+import cfg.CFGBuilder;
 
 public class IntExpr extends ASTExpr {
     private final int value;
@@ -22,7 +22,7 @@ public class IntExpr extends ASTExpr {
                 .toString();
     }
 
-    public void accept(CFGTransformer visitor) {
+    public void accept(CFGBuilder visitor) {
         visitor.visit(this);
     }
 }

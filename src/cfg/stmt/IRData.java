@@ -2,7 +2,7 @@ package cfg.stmt;
 
 import java.util.ArrayList;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class IRData extends IRStmt {
 
@@ -22,7 +22,7 @@ public class IRData extends IRStmt {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

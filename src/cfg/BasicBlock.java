@@ -5,7 +5,7 @@ import java.util.Stack;
 
 import cfg.stmt.ControlStmt;
 import cfg.stmt.IRStmt;
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class BasicBlock {
     private final String name;
@@ -100,7 +100,7 @@ public class BasicBlock {
         return parents.size() + children.size() == 0 && !isHead;
     }
 
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 

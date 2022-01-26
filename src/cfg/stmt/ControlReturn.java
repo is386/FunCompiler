@@ -3,7 +3,7 @@ package cfg.stmt;
 import java.util.ArrayList;
 
 import cfg.primitives.Primitive;
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class ControlReturn extends ControlStmt {
     private final Primitive value;
@@ -27,7 +27,7 @@ public class ControlReturn extends ControlStmt {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

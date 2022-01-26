@@ -1,6 +1,6 @@
 package cfg.primitives;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class SetEltPrimitive extends Primitive {
     private final Primitive var;
@@ -30,7 +30,7 @@ public class SetEltPrimitive extends Primitive {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

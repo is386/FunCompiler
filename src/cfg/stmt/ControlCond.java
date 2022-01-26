@@ -3,7 +3,7 @@ package cfg.stmt;
 import java.util.ArrayList;
 
 import cfg.primitives.Primitive;
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class ControlCond extends ControlStmt {
     private final Primitive cond;
@@ -34,7 +34,7 @@ public class ControlCond extends ControlStmt {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

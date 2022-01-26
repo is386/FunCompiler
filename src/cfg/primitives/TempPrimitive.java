@@ -1,6 +1,6 @@
 package cfg.primitives;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class TempPrimitive extends VarPrimitive {
     public TempPrimitive(String name) {
@@ -8,7 +8,7 @@ public class TempPrimitive extends VarPrimitive {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }

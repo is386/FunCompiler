@@ -1,14 +1,13 @@
-package ssa;
-
-import java.util.ArrayList;
+package visitor;
 
 import cfg.BasicBlock;
+import cfg.CFG;
 import cfg.primitives.*;
 import cfg.stmt.*;
 
-public interface SSAVisitor {
+public interface CFGVisitor {
 
-    public void visit(ArrayList<BasicBlock> node);
+    public void visit(CFG node);
 
     public void visit(BasicBlock node);
 

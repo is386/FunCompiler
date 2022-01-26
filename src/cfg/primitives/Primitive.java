@@ -1,7 +1,7 @@
 package cfg.primitives;
 
 import cfg.Type;
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public abstract class Primitive {
     private Type type = Type.UNDECLARED;
@@ -20,5 +20,5 @@ public abstract class Primitive {
         return "";
     }
 
-    public abstract void accept(SSAVisitor visitor);
+    public abstract void accept(CFGVisitor visitor);
 }

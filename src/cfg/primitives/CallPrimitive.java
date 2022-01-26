@@ -2,7 +2,7 @@ package cfg.primitives;
 
 import java.util.ArrayList;
 
-import ssa.SSAVisitor;
+import visitor.CFGVisitor;
 
 public class CallPrimitive extends Primitive {
     private final Primitive codeAddress;
@@ -44,7 +44,7 @@ public class CallPrimitive extends Primitive {
     }
 
     @Override
-    public void accept(SSAVisitor visitor) {
+    public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
 }
