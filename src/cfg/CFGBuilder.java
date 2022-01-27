@@ -69,6 +69,12 @@ public class CFGBuilder implements ASTVisitor {
 
         BasicBlock mainBlock = new BasicBlock("main");
         mainBlock.setAsHead();
+
+        for (String v : node.getLocalVars()) {
+            IREqual ir = new IREqual(new VarPrimitive(v), new IntPrimitive(0, true));
+            mainBlock.push(ir);
+        }
+
         blocks.push(mainBlock);
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);

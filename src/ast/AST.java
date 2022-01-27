@@ -17,6 +17,10 @@ public class AST extends ASTNode {
     public AST() {
     }
 
+    public ArrayList<String> getLocalVars() {
+        return localVars;
+    }
+
     public void addVar(String lv) {
         if (!lv.isEmpty()) {
             localVars.add(lv);
