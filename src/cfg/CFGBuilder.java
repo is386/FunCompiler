@@ -694,6 +694,7 @@ public class CFGBuilder implements ASTVisitor {
     @Override
     public void visit(VarExpr node) {
         primitives.push(new VarPrimitive(node.getName()));
+        cfg.addVar(node.getName());
     }
 
     @Override

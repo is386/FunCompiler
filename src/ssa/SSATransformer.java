@@ -42,7 +42,7 @@ public class SSATransformer implements CFGVisitor {
                     PhiReplacer phiReplacer = new PhiReplacer(v, temp);
                     String pName = findLastVersion(phiReplacer, p);
                     if (pName != null) {
-                        varMap.put(pName, temp);
+                        varMap.put(p.getName(), temp);
                     } else {
                         cfg.decrementTempVarCount();
                     }

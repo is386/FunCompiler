@@ -1,6 +1,7 @@
 package cfg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import cfg.primitives.TempPrimitive;
 import cfg.stmt.IRStmt;
@@ -8,9 +9,18 @@ import cfg.stmt.IRStmt;
 public class CFG {
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
     private BasicBlock dataBlock = new BasicBlock("data");
+    private HashSet<String> vars = new HashSet<>();
     private int tempVarCount = 1;
 
     public CFG() {
+    }
+
+    public HashSet<String> getVars() {
+        return vars;
+    }
+
+    public void addVar(String v) {
+        vars.add(v);
     }
 
     public void addToDataBlock(IRStmt ir) {

@@ -11,4 +11,9 @@ public class TempPrimitive extends VarPrimitive {
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
     }
+
+    @Override
+    public String toString() {
+        return "%" + name;
+    }
 }

@@ -4,15 +4,16 @@ import cfg.Type;
 import visitor.CFGVisitor;
 
 public class VarPrimitive extends Primitive {
-    private String name;
+    protected String name;
     private Type type = Type.UNDECLARED;
+    private int version = 0;
 
     public VarPrimitive(String name) {
         this.name = name;
     }
 
     public String toString() {
-        return "%" + name;
+        return "%" + name + version;
     }
 
     @Override
@@ -31,6 +32,10 @@ public class VarPrimitive extends Primitive {
 
     public void setName(String n) {
         name = n;
+    }
+
+    public void setVersion(int v) {
+        version = v;
     }
 
     @Override

@@ -8,6 +8,9 @@ public class PhiPrimitive extends Primitive {
 
     private LinkedHashMap<String, Primitive> varMap;
 
+    public PhiPrimitive() {
+    }
+
     public void setVarMap(LinkedHashMap<String, Primitive> v) {
         varMap = v;
     }
