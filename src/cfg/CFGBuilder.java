@@ -36,6 +36,9 @@ public class CFGBuilder implements ASTVisitor {
         visit(ast);
         addFailBlocks();
         connectBlocks();
+        cfg.resetVars();
+        cfg.resetFuncBlocks();
+        cfg.incrNumFuncs();
         return cfg;
     }
 
@@ -684,6 +687,9 @@ public class CFGBuilder implements ASTVisitor {
         }
         cfg.add(blocks.pop());
         cfg.resetTempVarCount();
+        cfg.resetVars();
+        cfg.resetFuncBlocks();
+        cfg.incrNumFuncs();
     }
 
     @Override

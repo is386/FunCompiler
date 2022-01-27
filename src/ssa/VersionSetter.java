@@ -6,24 +6,22 @@ import cfg.primitives.*;
 import cfg.stmt.*;
 import visitor.CFGVisitor;
 
-public class PhiReplacer implements CFGVisitor {
+public class VersionSetter implements CFGVisitor {
 
-    private VarPrimitive var;
-    private TempPrimitive newVar;
-    private boolean replaced = false;
+    private String var;
+    private int rightVersion;
+    private int leftVersion;
+    private boolean isEqualStmt = false;
+    private boolean isAssigned = false;
 
-    public PhiReplacer(VarPrimitive var, TempPrimitive newVar) {
+    public VersionSetter(String var, int rightVersion, int leftVersion) {
         this.var = var;
-        this.newVar = newVar;
-    }
-
-    public boolean isReplaced() {
-        return replaced;
+        this.rightVersion = rightVersion;
+        this.leftVersion = leftVersion;
     }
 
     @Override
     public void visit(BasicBlock node) {
-        replaced = false;
         for (IRStmt ir : node.getStatements()) {
             ir.accept(this);
         }
@@ -32,10 +30,13 @@ public class PhiReplacer implements CFGVisitor {
     @Override
     public void visit(IREqual node) {
         if (node.getVar() != null) {
+            isEqualStmt = true;
             node.getVar().accept(this);
         }
-        if (replaced) {
-            node.getPrimitive().accept(this);
+        isEqualStmt = false;
+        node.getPrimitive().accept(this);
+        if (isAssigned) {
+            rightVersion = leftVersion;
         }
     }
 
@@ -95,9 +96,11 @@ public class PhiReplacer implements CFGVisitor {
 
     @Override
     public void visit(VarPrimitive node) {
-        if (node.getName().equals(var.getName())) {
-            node.setName(newVar.getName());
-            replaced = true;
+        if (isEqualStmt && node.getName().equals(var)) {
+            node.setVersion(leftVersion);
+            isAssigned = true;
+        } else {
+            node.setVersion(rightVersion);
         }
     }
 
