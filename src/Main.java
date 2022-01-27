@@ -49,9 +49,6 @@ public class Main {
         CFGBuilder cfgBuilder = new CFGBuilder(doOpt);
         CFG cfg = cfgBuilder.build(ast);
 
-        // SSATransformer ssaTransformer = new SSATransformer();
-        // ssaTransformer.visit(cfg);
-
         SSATransformer2 ssa2 = new SSATransformer2();
         ssa2.visit(cfg);
 

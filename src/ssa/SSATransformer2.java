@@ -39,6 +39,7 @@ public class SSATransformer2 implements CFGVisitor {
             lVersionMap.put(b.getName(), new LinkedHashMap<>());
             rVersionMap.put(b.getName(), new LinkedHashMap<>());
             b.accept(this);
+
             for (String v : varCount.keySet()) {
                 if (lVersionMap.get(b.getName()).containsKey(v)) {
                     continue;
@@ -52,8 +53,6 @@ public class SSATransformer2 implements CFGVisitor {
                     lVersionMap.get(b.getName()).put(v, varCount.get(v) + 1);
                     varCount.put(v, varCount.get(v) + 1);
                 }
-            }
-            for (String v : varCount.keySet()) {
                 if (rVersionMap.get(b.getName()).containsKey(v)) {
                     continue;
                 }
@@ -66,6 +65,10 @@ public class SSATransformer2 implements CFGVisitor {
                     rVersionMap.get(b.getName()).put(v, varCount.get(v));
                 }
             }
+        }
+
+        if (phiBlocks.isEmpty()) {
+            return;
         }
 
         for (BasicBlock b : phiBlocks) {
@@ -84,6 +87,18 @@ public class SSATransformer2 implements CFGVisitor {
                 var.setVersion(val);
                 IREqual ir = new IREqual(var, phiNode);
                 b.insertStart(ir);
+            }
+        }
+
+        for (BasicBlock b : node.getBlocks()) {
+            if (b.getControlStmt() == null) {
+                continue;
+            }
+            for (String v : varCount.keySet()) {
+                int r = rVersionMap.get(b.getName()).get(v);
+                int l = lVersionMap.get(b.getName()).get(v);
+                PhiReplacer2 phi = new PhiReplacer2(v, r, l);
+                phi.visit(b);
             }
         }
 
@@ -169,7 +184,9 @@ public class SSATransformer2 implements CFGVisitor {
         String blockName = currentBlock.getName();
         String varName = node.getName();
         if (isEqualStmt) {
-            rVersionMap.get(blockName).put(varName, varCount.get(varName));
+            if (!rVersionMap.get(blockName).containsKey(varName)) {
+                rVersionMap.get(blockName).put(varName, varCount.get(varName));
+            }
             varCount.put(varName, varCount.get(varName) + 1);
             lVersionMap.get(blockName).put(varName, varCount.get(varName));
         }
