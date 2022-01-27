@@ -22,7 +22,6 @@ public class Main {
         Scanner scanner = new Scanner(System.in);
         ArrayList<String> inputList = new ArrayList<>();
 
-        System.out.println("Input Program (Press Enter to Exit):\n");
         String firstLine = scanner.nextLine();
 
         if (firstLine.length() == 0) {

@@ -156,10 +156,8 @@ public class CFGBuilder implements ASTVisitor {
             blocks.peek().setControlStmt(c);
             cfg.add(blocks.pop());
             blocks.push(new BasicBlock(ifBranchName));
-            arith.setOperand1(tempVar);
-        } else {
-            arith.setOperand1(caller);
         }
+        arith.setOperand1(caller);
 
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -186,8 +184,7 @@ public class CFGBuilder implements ASTVisitor {
         badField = true;
 
         SetEltPrimitive setElt = new SetEltPrimitive(caller, tempVar, newVal);
-        tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, setElt);
+        ir = new IREqual(null, setElt);
         blocks.peek().push(ir);
     }
 
@@ -367,7 +364,6 @@ public class CFGBuilder implements ASTVisitor {
             cfg.add(blocks.pop());
             blocks.push(new BasicBlock(ifBranchName));
         }
-
         LoadPrimitive load = new LoadPrimitive(caller);
 
         tempVar = cfg.getNextTemp();

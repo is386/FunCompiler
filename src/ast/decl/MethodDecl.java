@@ -56,7 +56,7 @@ public class MethodDecl extends ASTNode {
     }
 
     public String getBlockName() {
-        String blockName = name + className + "(%this";
+        String blockName = name + className + "(%this,";
         if (args.size() != 0) {
             blockName += "%" + String.join(",%", args);
         }
