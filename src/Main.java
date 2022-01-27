@@ -5,7 +5,7 @@ import ast.AST;
 import cfg.CFG;
 import cfg.CFGBuilder;
 import parse.Parser;
-import ssa.SSA2;
+import ssa.SSATransformer2;
 
 public class Main {
     private static boolean doOpt = true;
@@ -52,7 +52,7 @@ public class Main {
         // SSATransformer ssaTransformer = new SSATransformer();
         // ssaTransformer.visit(cfg);
 
-        SSA2 ssa2 = new SSA2();
+        SSATransformer2 ssa2 = new SSATransformer2();
         ssa2.visit(cfg);
 
         System.out.println(cfg);
