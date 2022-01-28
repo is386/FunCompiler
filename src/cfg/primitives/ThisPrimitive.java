@@ -15,6 +15,6 @@ public class ThisPrimitive extends VarPrimitive {
 
     @Override
     public String toString() {
-        return "%this";
+        return "%this0";
     }
 }
