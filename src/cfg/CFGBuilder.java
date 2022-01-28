@@ -71,6 +71,7 @@ public class CFGBuilder implements ASTVisitor {
         mainBlock.setAsHead();
 
         for (String v : node.getLocalVars()) {
+            cfg.addVar(v);
             IREqual ir = new IREqual(new VarPrimitive(v), new IntPrimitive(0, true));
             mainBlock.push(ir);
         }
@@ -684,13 +685,22 @@ public class CFGBuilder implements ASTVisitor {
         BasicBlock methodBlock = new BasicBlock(node.getBlockName());
         methodBlock.setParams(node.getArgs());
         methodBlock.setAsHead();
+
+        for (String v : node.getLocalVars()) {
+            cfg.addVar(v);
+            IREqual ir = new IREqual(new VarPrimitive(v), new IntPrimitive(0, true));
+            methodBlock.push(ir);
+        }
         blocks.push(methodBlock);
+
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
+
         if (blocks.peek().getControlStmt() == null) {
             blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
         }
+
         cfg.add(blocks.pop());
         cfg.resetTempVarCount();
         cfg.resetVars();

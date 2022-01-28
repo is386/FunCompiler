@@ -68,6 +68,10 @@ public class MethodDecl extends ASTNode {
         return args;
     }
 
+    public ArrayList<String> localVars() {
+        return localVars;
+    }
+
     public String toString() {
         JSONObject j = new JSONObject()
                 .put("node", this.getClass().getSimpleName())
