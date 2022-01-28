@@ -13,7 +13,7 @@ public class BasicBlock {
     private ControlStmt control = null;
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
-    // private ArrayList<VarPrimitive> vars = new ArrayList<>();
+    private ArrayList<String> params = new ArrayList<>();
     private boolean isHead = false;
 
     public BasicBlock(String name) {
@@ -21,13 +21,6 @@ public class BasicBlock {
     }
 
     public void push(IRStmt ir) {
-        // if (ir instanceof IREqual) {
-        // IREqual eq = (IREqual) ir;
-        // if (eq.getVar() instanceof VarPrimitive && !(eq.getVar() instanceof
-        // TempPrimitive)) {
-        // vars.add((VarPrimitive) eq.getVar());
-        // }
-        // }
         statements.add(ir);
     }
 
@@ -43,28 +36,11 @@ public class BasicBlock {
         return statements.peek();
     }
 
-    // public ArrayList<VarPrimitive> getVars() {
-    // return vars;
-    // }
-
     public Stack<IRStmt> getStatements() {
         return statements;
     }
 
     public void setControlStmt(ControlStmt c) {
-        // if (c instanceof ControlCond) {
-        // ControlCond cc = (ControlCond) c;
-        // if (cc.getCond() instanceof VarPrimitive && !(cc.getCond() instanceof
-        // TempPrimitive)) {
-        // vars.add((VarPrimitive) cc.getCond());
-        // }
-        // } else if (c instanceof ControlReturn) {
-        // ControlReturn cc = (ControlReturn) c;
-        // if (cc.getValue() instanceof VarPrimitive && !(cc.getValue() instanceof
-        // TempPrimitive)) {
-        // vars.add((VarPrimitive) cc.getValue());
-        // }
-        // }
         control = c;
     }
 
@@ -92,6 +68,10 @@ public class BasicBlock {
         parents.add(parent);
     }
 
+    public void setParams(ArrayList<String> params) {
+        this.params = params;
+    }
+
     public void setAsHead() {
         isHead = true;
     }
@@ -105,7 +85,15 @@ public class BasicBlock {
     }
 
     public String toString() {
-        String s = name + ":\n";
+        String s = name;
+        if (!params.isEmpty()) {
+            s += "(";
+            for (String p : params) {
+                s += "%" + p + "0, ";
+            }
+            s = s.substring(0, s.length() - 2) + ")";
+        }
+        s += ":\n";
         for (IRStmt ir : statements) {
             s += "    " + ir + "\n";
         }

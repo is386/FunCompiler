@@ -20,6 +20,7 @@ public class MethodDecl extends ASTNode {
 
     public MethodDecl(MethodExpr methodExpr) {
         this.name = methodExpr.getName();
+        this.args.add("this");
         for (ASTExpr e : methodExpr.getArgs()) {
             if (e != null) {
                 args.add(e.getName());
@@ -56,11 +57,15 @@ public class MethodDecl extends ASTNode {
     }
 
     public String getBlockName() {
-        String blockName = name + className + "(%this,";
-        if (args.size() != 0) {
-            blockName += "%" + String.join(",%", args);
-        }
-        return blockName + ")";
+        return name + className;
+    }
+
+    public ArrayList<String> getLocalVars() {
+        return localVars;
+    }
+
+    public ArrayList<String> getArgs() {
+        return args;
     }
 
     public String toString() {

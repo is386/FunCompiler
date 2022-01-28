@@ -682,10 +682,14 @@ public class CFGBuilder implements ASTVisitor {
     @Override
     public void visit(MethodDecl node) {
         BasicBlock methodBlock = new BasicBlock(node.getBlockName());
+        methodBlock.setParams(node.getArgs());
         methodBlock.setAsHead();
         blocks.push(methodBlock);
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
+        }
+        if (blocks.peek().getControlStmt() == null) {
+            blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
         }
         cfg.add(blocks.pop());
         cfg.resetTempVarCount();
