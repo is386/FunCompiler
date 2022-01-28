@@ -99,7 +99,7 @@ public class VersionSetter implements CFGVisitor {
         if (isEqualStmt && node.getName().equals(var)) {
             node.setVersion(leftVersion);
             isAssigned = true;
-        } else {
+        } else if (node.getName().equals(var)) {
             node.setVersion(rightVersion);
         }
     }
