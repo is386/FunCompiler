@@ -208,6 +208,14 @@ public class CFGBuilder implements ASTVisitor {
             IREqual ir = new IREqual(tempVar, arith);
             blocks.peek().push(ir);
             condVar = tempVar;
+        } else if (condVar.getType() == Type.INTEGER) {
+            ArithPrimitive arith = new ArithPrimitive("/");
+            TempPrimitive tempVar = cfg.getNextTemp();
+            arith.setOperand1(condVar);
+            arith.setOperand2(new IntPrimitive(2, false));
+            IREqual ir = new IREqual(tempVar, arith);
+            blocks.peek().push(ir);
+            condVar = tempVar;
         }
 
         String ifBranchName = "l" + blockCount++;
@@ -321,16 +329,16 @@ public class CFGBuilder implements ASTVisitor {
         Primitive varToPrint = primitives.pop();
         if (varToPrint.getType() == Type.UNDECLARED) {
             checkIfNumber(varToPrint);
-            ArithPrimitive arith = new ArithPrimitive("/");
-            TempPrimitive tempVar = cfg.getNextTemp();
-            arith.setOperand1(varToPrint);
-            arith.setOperand2(new IntPrimitive(2, false));
-            IREqual ir = new IREqual(tempVar, arith);
-            blocks.peek().push(ir);
-            varToPrint = tempVar;
         }
+        ArithPrimitive arith = new ArithPrimitive("/");
+        TempPrimitive tempVar = cfg.getNextTemp();
+        arith.setOperand1(varToPrint);
+        arith.setOperand2(new IntPrimitive(2, false));
+        IREqual ir = new IREqual(tempVar, arith);
+        blocks.peek().push(ir);
+        varToPrint = tempVar;
         PrintPrimitive p = new PrintPrimitive(varToPrint);
-        IRStmt ir = new IREqual(null, p);
+        ir = new IREqual(null, p);
         blocks.peek().push(ir);
     }
 
