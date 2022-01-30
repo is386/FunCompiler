@@ -25,6 +25,9 @@ public class VersionSetter implements CFGVisitor {
         for (IRStmt ir : node.getStatements()) {
             ir.accept(this);
         }
+        if (node.getControlStmt() != null) {
+            node.getControlStmt().accept(this);
+        }
     }
 
     @Override
