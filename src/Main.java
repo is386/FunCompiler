@@ -4,6 +4,7 @@ import java.util.Scanner;
 import ast.AST;
 import cfg.CFG;
 import cfg.CFGBuilder;
+import cfg.Dom;
 import parse.Parser;
 import ssa.SSATransformer;
 
@@ -47,6 +48,8 @@ public class Main {
 
         CFGBuilder cfgBuilder = new CFGBuilder(doOpt);
         CFG cfg = cfgBuilder.build(ast);
+
+        Dom.storeDominators(cfg);
 
         SSATransformer ssa = new SSATransformer();
         ssa.visit(cfg);

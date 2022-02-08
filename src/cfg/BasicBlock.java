@@ -1,6 +1,7 @@
 package cfg;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Stack;
 
 import cfg.stmt.ControlStmt;
@@ -13,6 +14,7 @@ public class BasicBlock {
     private ControlStmt control = null;
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
+    private HashSet<BasicBlock> dominators = new HashSet<>();
     private ArrayList<String> params = new ArrayList<>();
     private boolean isHead = false;
 
@@ -82,6 +84,18 @@ public class BasicBlock {
 
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public HashSet<BasicBlock> getDominators() {
+        return dominators;
+    }
+
+    public void setDominators(HashSet<BasicBlock> d) {
+        this.dominators = new HashSet<>(d);
+    }
+
+    public void addDominator(BasicBlock d) {
+        this.dominators.add(d);
     }
 
     public String toString() {
