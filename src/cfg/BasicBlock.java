@@ -10,16 +10,19 @@ import visitor.CFGVisitor;
 
 public class BasicBlock {
     private final String name;
+    private final Integer num;
     private Stack<IRStmt> statements = new Stack<>();
     private ControlStmt control = null;
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
     private HashSet<BasicBlock> dominators = new HashSet<>();
+    private BasicBlock iDom = null;
     private ArrayList<String> params = new ArrayList<>();
     private boolean isHead = false;
 
-    public BasicBlock(String name) {
+    public BasicBlock(String name, Integer num) {
         this.name = name;
+        this.num = num;
     }
 
     public void push(IRStmt ir) {
@@ -96,6 +99,28 @@ public class BasicBlock {
 
     public void addDominator(BasicBlock d) {
         this.dominators.add(d);
+    }
+
+    public BasicBlock getiDom() {
+        return iDom;
+    }
+
+    public void setiDom(BasicBlock iDom) {
+        this.iDom = iDom;
+    }
+
+    public void printDominators() {
+        System.out.print("\n" + name + ": ");
+        for (BasicBlock b : dominators) {
+            if (b == iDom) {
+                System.out.print("(iDom)");
+            }
+            System.out.print(b.getName() + ", ");
+        }
+    }
+
+    public Integer getNum() {
+        return num;
     }
 
     public String toString() {

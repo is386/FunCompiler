@@ -9,7 +9,7 @@ import cfg.stmt.IRStmt;
 public class CFG {
     private int numFuncs = 0;
     private ArrayList<BasicBlock> blocks = new ArrayList<>();
-    private BasicBlock dataBlock = new BasicBlock("data");
+    private BasicBlock dataBlock = new BasicBlock("data", 0);
     private ArrayList<HashSet<String>> allVars = new ArrayList<>();
     private ArrayList<HashSet<String>> allBlocks = new ArrayList<>();
     private HashSet<String> vars = new HashSet<>();

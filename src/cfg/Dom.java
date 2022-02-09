@@ -31,7 +31,7 @@ public class Dom {
                         if (temp.isEmpty()) {
                             temp = new HashSet<>(p.getDominators());
                         } else {
-                            temp.retainAll(p.getDominators());
+                            temp.retainAll(new HashSet<>(p.getDominators()));
                         }
                     }
                     temp.add(b);
@@ -39,6 +39,17 @@ public class Dom {
                         b.setDominators(temp);
                         changed = true;
                     }
+                }
+            }
+        }
+
+        for (BasicBlock b : cfg.getBlocks()) {
+            for (BasicBlock dom : b.getDominators()) {
+                if (dom == b) {
+                    continue;
+                }
+                if (b.getiDom() == null || dom.getNum() > b.getiDom().getNum()) {
+                    b.setiDom(dom);
                 }
             }
         }

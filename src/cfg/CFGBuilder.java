@@ -67,7 +67,7 @@ public class CFGBuilder implements ASTVisitor {
             m.accept(this);
         }
 
-        BasicBlock mainBlock = new BasicBlock("main");
+        BasicBlock mainBlock = new BasicBlock("main", 0);
         mainBlock.setAsHead();
 
         for (String v : node.getLocalVars()) {
@@ -91,25 +91,25 @@ public class CFGBuilder implements ASTVisitor {
         BasicBlock fail;
 
         if (badPtr) {
-            fail = new BasicBlock("badPtr");
+            fail = new BasicBlock("badPtr", 0);
             fail.push(new IRFail("NotAPointer"));
             cfg.add(fail);
         }
 
         if (badNumber) {
-            fail = new BasicBlock("badNumber");
+            fail = new BasicBlock("badNumber", 0);
             fail.push(new IRFail("NotANumber"));
             cfg.add(fail);
         }
 
         if (badField) {
-            fail = new BasicBlock("badField");
+            fail = new BasicBlock("badField", 0);
             fail.push(new IRFail("NoSuchField"));
             cfg.add(fail);
         }
 
         if (badMethod) {
-            fail = new BasicBlock("badMethod");
+            fail = new BasicBlock("badMethod", 0);
             fail.push(new IRFail("NoSuchMethod"));
             cfg.add(fail);
         }
@@ -162,7 +162,7 @@ public class CFGBuilder implements ASTVisitor {
             badPtr = true;
             blocks.peek().setControlStmt(c);
             cfg.add(blocks.pop());
-            blocks.push(new BasicBlock(ifBranchName));
+            blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
         }
         arith.setOperand1(caller);
 
@@ -187,7 +187,7 @@ public class CFGBuilder implements ASTVisitor {
         c = new ControlCond(tempVar, ifBranchName, "badField");
         blocks.peek().setControlStmt(c);
         cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName));
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
         badField = true;
 
         SetEltPrimitive setElt = new SetEltPrimitive(caller, tempVar, newVal);
@@ -218,9 +218,12 @@ public class CFGBuilder implements ASTVisitor {
             condVar = tempVar;
         }
 
-        String ifBranchName = "l" + blockCount++;
-        String elseBranchName = "l" + blockCount++;
-        String jumpBlockName = "l" + blockCount;
+        int ifBlockNum = blockCount++;
+        int elseBlockNum = blockCount++;
+        int jumpBlockNum = blockCount;
+        String ifBranchName = "l" + ifBlockNum;
+        String elseBranchName = "l" + elseBlockNum;
+        String jumpBlockName = "l" + jumpBlockNum;
 
         ControlStmt c;
         if (!node.getElseStatements().isEmpty()) {
@@ -228,16 +231,17 @@ public class CFGBuilder implements ASTVisitor {
             blockCount++;
         } else {
             jumpBlockName = elseBranchName;
+            jumpBlockNum = elseBlockNum;
             c = new ControlCond(condVar, ifBranchName, jumpBlockName);
         }
 
         blocks.peek().setControlStmt(c);
         cfg.add(blocks.pop());
 
-        BasicBlock nextBlock = new BasicBlock(jumpBlockName);
+        BasicBlock nextBlock = new BasicBlock(jumpBlockName, jumpBlockNum);
         blocks.push(nextBlock);
 
-        blocks.push(new BasicBlock(ifBranchName));
+        blocks.push(new BasicBlock(ifBranchName, ifBlockNum));
         for (ASTStmt s : node.getIfStatements()) {
             s.accept(this);
         }
@@ -248,7 +252,7 @@ public class CFGBuilder implements ASTVisitor {
         cfg.add(top);
 
         if (!node.getElseStatements().isEmpty()) {
-            blocks.push(new BasicBlock(elseBranchName));
+            blocks.push(new BasicBlock(elseBranchName, elseBlockNum));
             for (ASTStmt s : node.getElseStatements()) {
                 s.accept(this);
             }
@@ -266,16 +270,16 @@ public class CFGBuilder implements ASTVisitor {
         Primitive condVar = primitives.pop();
         String loopName = "l" + blockCount++;
         String jumpBack;
-        BasicBlock loopHead = new BasicBlock(loopName);
+        BasicBlock loopHead = new BasicBlock(loopName, blockCount - 1);
         ControlStmt c;
 
         if (condVar.getType() == Type.UNDECLARED) {
             c = new ControlJump(loopName);
             blocks.peek().setControlStmt(c);
 
-            BasicBlock b = new BasicBlock(loopName);
+            BasicBlock b = new BasicBlock(loopName, blockCount - 1);
             loopName = "l" + blockCount++;
-            loopHead = new BasicBlock(loopName);
+            loopHead = new BasicBlock(loopName, blockCount - 1);
             ArithPrimitive arith = new ArithPrimitive("&");
             arith.setOperand1(condVar);
             arith.setOperand2(new IntPrimitive(1, false));
@@ -304,13 +308,15 @@ public class CFGBuilder implements ASTVisitor {
         }
         cfg.add(blocks.pop());
 
-        String bodyName = "l" + blockCount++;
-        String finishName = "l" + blockCount++;
+        int bodyNum = blockCount++;
+        int finishNum = blockCount++;
+        String bodyName = "l" + bodyNum;
+        String finishName = "l" + finishNum;
         c = new ControlCond(condVar, bodyName, finishName);
         loopHead.setControlStmt(c);
         cfg.add(loopHead);
 
-        blocks.push(new BasicBlock(bodyName));
+        blocks.push(new BasicBlock(bodyName, bodyNum));
         for (ASTStmt s : node.getStatements()) {
             s.accept(this);
         }
@@ -320,7 +326,7 @@ public class CFGBuilder implements ASTVisitor {
             top.setControlStmt(new ControlJump(jumpBack));
         }
         cfg.add(top);
-        blocks.push(new BasicBlock(finishName));
+        blocks.push(new BasicBlock(finishName, finishNum));
     }
 
     @Override
@@ -377,7 +383,7 @@ public class CFGBuilder implements ASTVisitor {
             badPtr = true;
             blocks.peek().setControlStmt(c);
             cfg.add(blocks.pop());
-            blocks.push(new BasicBlock(ifBranchName));
+            blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
         }
         LoadPrimitive load = new LoadPrimitive(caller);
 
@@ -397,7 +403,7 @@ public class CFGBuilder implements ASTVisitor {
         c = new ControlCond(tempVar, ifBranchName, "badMethod");
         blocks.peek().setControlStmt(c);
         cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName));
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
         badMethod = true;
 
         CallPrimitive call = new CallPrimitive(tempVar, caller);
@@ -448,7 +454,7 @@ public class CFGBuilder implements ASTVisitor {
             badPtr = true;
             blocks.peek().setControlStmt(c);
             cfg.add(blocks.pop());
-            blocks.push(new BasicBlock(ifBranchName));
+            blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
         }
 
         arith = new ArithPrimitive("+");
@@ -474,7 +480,7 @@ public class CFGBuilder implements ASTVisitor {
         c = new ControlCond(tempVar, ifBranchName, "badField");
         blocks.peek().setControlStmt(c);
         cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName));
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
         badField = true;
 
         if (returnVar == null && primitives.size() == 0) {
@@ -690,7 +696,7 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(MethodDecl node) {
-        BasicBlock methodBlock = new BasicBlock(node.getBlockName());
+        BasicBlock methodBlock = new BasicBlock(node.getBlockName(), 0);
         methodBlock.setParams(node.getArgs());
         methodBlock.setAsHead();
 
@@ -748,7 +754,7 @@ public class CFGBuilder implements ASTVisitor {
         badNumber = true;
         blocks.peek().setControlStmt(c);
         cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName));
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
     }
 
     private void connectBlocks() {
