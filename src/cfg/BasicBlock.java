@@ -17,6 +17,7 @@ public class BasicBlock {
     private ArrayList<BasicBlock> children = new ArrayList<>();
     private HashSet<BasicBlock> dominators = new HashSet<>();
     private BasicBlock iDom = null;
+    private HashSet<BasicBlock> df = new HashSet<>();
     private ArrayList<String> params = new ArrayList<>();
     private boolean isHead = false;
 
@@ -109,14 +110,27 @@ public class BasicBlock {
         this.iDom = iDom;
     }
 
+    public HashSet<BasicBlock> getDF() {
+        return df;
+    }
+
+    public void setDF(HashSet<BasicBlock> df) {
+        this.df = new HashSet<>(df);
+    }
+
     public void printDominators() {
         System.out.print("\n" + name + ": ");
         for (BasicBlock b : dominators) {
             if (b == iDom) {
                 System.out.print("(iDom)");
             }
-            System.out.print(b.getName() + ", ");
+            System.out.print(b.getNum() + ", ");
         }
+        System.out.print("\n");
+        for (BasicBlock b : df) {
+            System.out.print(b.getNum() + ", ");
+        }
+        System.out.print("\n");
     }
 
     public Integer getNum() {

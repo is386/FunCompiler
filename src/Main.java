@@ -49,6 +49,28 @@ public class Main {
         CFGBuilder cfgBuilder = new CFGBuilder(doOpt);
         CFG cfg = cfgBuilder.build(ast);
 
+        // HashSet<String> names = new HashSet<>();
+        // ArrayList<BasicBlock> newBlocks = new ArrayList<>();
+        // for (int i = 0; i < 9; i++) {
+        // names.add("l" + Integer.toString(i));
+        // newBlocks.add(new BasicBlock("l" + Integer.toString(i), i));
+        // }
+        // newBlocks.get(1).addParent(newBlocks.get(0));
+        // newBlocks.get(1).addParent(newBlocks.get(3));
+        // newBlocks.get(2).addParent(newBlocks.get(1));
+        // newBlocks.get(3).addParent(newBlocks.get(2));
+        // newBlocks.get(3).addParent(newBlocks.get(7));
+        // newBlocks.get(4).addParent(newBlocks.get(3));
+        // newBlocks.get(5).addParent(newBlocks.get(1));
+        // newBlocks.get(6).addParent(newBlocks.get(5));
+        // newBlocks.get(7).addParent(newBlocks.get(6));
+        // newBlocks.get(7).addParent(newBlocks.get(8));
+        // newBlocks.get(8).addParent(newBlocks.get(5));
+        // CFG cfg2 = new CFG();
+        // cfg2.setBlocks(newBlocks);
+        // cfg2.incrNumFuncs();
+        // cfg2.setFuncBlocks(names);
+        // Dom.storeDominators(cfg2);
         Dom.storeDominators(cfg);
 
         SSATransformer ssa = new SSATransformer();

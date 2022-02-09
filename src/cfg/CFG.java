@@ -23,6 +23,10 @@ public class CFG {
         return allBlocks.get(funcNum);
     }
 
+    public void setFuncBlocks(HashSet<String> funcNum) {
+        allBlocks.add(funcNum);
+    }
+
     public HashSet<String> getFuncVars(int funcNum) {
         return allVars.get(funcNum);
     }
@@ -64,6 +68,10 @@ public class CFG {
 
     public ArrayList<BasicBlock> getBlocks() {
         return blocks;
+    }
+
+    public void setBlocks(ArrayList<BasicBlock> b) {
+        blocks = b;
     }
 
     public TempPrimitive getNextTemp() {

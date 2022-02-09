@@ -53,5 +53,18 @@ public class Dom {
                 }
             }
         }
+
+        for (BasicBlock b : cfg.getBlocks()) {
+            if (b.getParents().size() > 1) {
+                for (BasicBlock p : b.getParents()) {
+                    BasicBlock runner = p;
+                    while (runner != b.getiDom()) {
+                        runner.getDF().add(b);
+                        runner.setDF(runner.getDF());
+                        runner = runner.getiDom();
+                    }
+                }
+            }
+        }
     }
 }
