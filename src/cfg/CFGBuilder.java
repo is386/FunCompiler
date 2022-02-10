@@ -93,24 +93,28 @@ public class CFGBuilder implements ASTVisitor {
         if (badPtr) {
             fail = new BasicBlock("badPtr", 0);
             fail.push(new IRFail("NotAPointer"));
+            fail.setFail();
             cfg.add(fail);
         }
 
         if (badNumber) {
             fail = new BasicBlock("badNumber", 0);
             fail.push(new IRFail("NotANumber"));
+            fail.setFail();
             cfg.add(fail);
         }
 
         if (badField) {
             fail = new BasicBlock("badField", 0);
             fail.push(new IRFail("NoSuchField"));
+            fail.setFail();
             cfg.add(fail);
         }
 
         if (badMethod) {
             fail = new BasicBlock("badMethod", 0);
             fail.push(new IRFail("NoSuchMethod"));
+            fail.setFail();
             cfg.add(fail);
         }
     }

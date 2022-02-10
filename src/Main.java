@@ -10,6 +10,8 @@ import ssa.SSAOptimized;
 import ssa.SSAUnoptimized;
 import visitor.CFGVisitor;
 
+// TODO: Fix bugs found in crazy.441
+
 public class Main {
     private static boolean doOpt = true;
     private static boolean oldSSA = false;

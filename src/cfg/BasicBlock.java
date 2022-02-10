@@ -27,6 +27,18 @@ public class BasicBlock {
         this.num = num;
     }
 
+    public boolean isHead() {
+        return isHead;
+    }
+
+    public void setFail() {
+        isFail = true;
+    }
+
+    public boolean isFail() {
+        return isFail;
+    }
+
     public void push(IRStmt ir) {
         statements.add(ir);
     }
@@ -73,6 +85,10 @@ public class BasicBlock {
 
     public void addParent(BasicBlock parent) {
         parents.add(parent);
+    }
+
+    public ArrayList<String> getParams() {
+        return params;
     }
 
     public void setParams(ArrayList<String> params) {

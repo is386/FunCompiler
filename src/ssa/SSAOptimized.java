@@ -88,14 +88,6 @@ public class SSAOptimized implements CFGVisitor {
             }
         }
 
-        // for (String var : blocksByAssignedVar.keySet()) {
-        // System.out.print(var + ":");
-        // for (BasicBlock b : blocksByAssignedVar.get(var)) {
-        // System.out.print(" " + b.getName());
-        // }
-        // System.out.print("\n");
-        // }
-
         for (String var : blocksByAssignedVar.keySet()) {
             phiBlocks.put(var, new HashSet<>());
         }
@@ -107,7 +99,7 @@ public class SSAOptimized implements CFGVisitor {
             }
             for (BasicBlock b : blocksByAssignedVar.get(var)) {
                 for (BasicBlock d : b.getDF()) {
-                    if (!phiBlocks.get(var).contains(d)) {
+                    if (!phiBlocks.get(var).contains(d) && !d.isFail()) {
                         hasPhiBlocks = true;
                         phiBlocks.get(var).add(d);
                     }
@@ -119,13 +111,22 @@ public class SSAOptimized implements CFGVisitor {
             return;
         }
 
-        for (String v : phiBlocks.keySet()) {
-            System.out.print(v + ":");
-            for (BasicBlock b : phiBlocks.get(v)) {
-                System.out.print(" " + b.getName());
-            }
-            System.out.print("\n");
-        }
+        // for (String var : blocksByAssignedVar.keySet()) {
+        // System.out.print(var + ":");
+        // for (BasicBlock b : blocksByAssignedVar.get(var)) {
+        // System.out.print(" " + b.getName());
+        // }
+        // System.out.print("\n");
+        // }
+        // System.out.print("\n");
+
+        // for (String v : phiBlocks.keySet()) {
+        // System.out.print(v + ":");
+        // for (BasicBlock b : phiBlocks.get(v)) {
+        // System.out.print(" " + b.getName());
+        // }
+        // System.out.print("\n");
+        // }
 
         for (String v : phiBlocks.keySet()) {
             for (BasicBlock b : phiBlocks.get(v)) {
@@ -166,6 +167,14 @@ public class SSAOptimized implements CFGVisitor {
     public void visit(BasicBlock node) {
         for (IRStmt ir : node.getStatements()) {
             ir.accept(this);
+        }
+        if (node.isHead()) {
+            for (String var : node.getParams()) {
+                if (!blocksByAssignedVar.containsKey(var)) {
+                    blocksByAssignedVar.put(var, new HashSet<>());
+                }
+                blocksByAssignedVar.get(var).add(node);
+            }
         }
         if (node.getControlStmt() != null) {
             node.getControlStmt().accept(this);
