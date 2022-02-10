@@ -6,15 +6,20 @@ import cfg.CFG;
 import cfg.CFGBuilder;
 import cfg.Dom;
 import parse.Parser;
-import ssa.SSATransformer;
+import ssa.SSAOptimized;
+import ssa.SSAUnoptimized;
+import visitor.CFGVisitor;
 
 public class Main {
     private static boolean doOpt = true;
+    private static boolean oldSSA = false;
 
     private static void parseArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
             if (args[i].toLowerCase().equals("-noopt")) {
                 doOpt = false;
+            } else if (args[i].toLowerCase().equals("-oldssa")) {
+                oldSSA = true;
             }
         }
     }
@@ -73,7 +78,12 @@ public class Main {
         // Dom.storeDominators(cfg2);
         Dom.storeDominators(cfg);
 
-        SSATransformer ssa = new SSATransformer();
+        CFGVisitor ssa;
+        if (oldSSA) {
+            ssa = new SSAUnoptimized();
+        } else {
+            ssa = new SSAOptimized();
+        }
         ssa.visit(cfg);
 
         System.out.println(cfg);

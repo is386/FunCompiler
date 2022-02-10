@@ -8,7 +8,7 @@ import cfg.primitives.*;
 import cfg.stmt.*;
 import visitor.CFGVisitor;
 
-public class SSATransformer implements CFGVisitor {
+public class SSAUnoptimized implements CFGVisitor {
 
     private CFG cfg;
     private BasicBlock currentBlock;

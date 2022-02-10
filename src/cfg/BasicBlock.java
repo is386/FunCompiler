@@ -20,6 +20,7 @@ public class BasicBlock {
     private HashSet<BasicBlock> df = new HashSet<>();
     private ArrayList<String> params = new ArrayList<>();
     private boolean isHead = false;
+    private boolean isFail = false;
 
     public BasicBlock(String name, Integer num) {
         this.name = name;

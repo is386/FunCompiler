@@ -58,7 +58,7 @@ public class Dom {
             if (b.getParents().size() > 1) {
                 for (BasicBlock p : b.getParents()) {
                     BasicBlock runner = p;
-                    while (runner != b.getiDom()) {
+                    while (runner != b.getiDom() && runner != null) {
                         runner.getDF().add(b);
                         runner.setDF(runner.getDF());
                         runner = runner.getiDom();
