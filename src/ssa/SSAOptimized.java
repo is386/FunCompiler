@@ -52,9 +52,6 @@ public class SSAOptimized implements CFGVisitor {
             if (b.getControlStmt() == null || !currentBlocks.contains(b.getName())) {
                 continue;
             }
-            // if (b.getParents().size() >= 2) {
-            // phiBlocks.add(b);
-            // }
 
             currentBlock = b;
             lVersionMap.put(b.getName(), new LinkedHashMap<>());
@@ -65,25 +62,20 @@ public class SSAOptimized implements CFGVisitor {
                 if (lVersionMap.get(b.getName()).containsKey(v)) {
                     continue;
                 }
-                if (b.getParents().size() == 1) {
-                    Integer val = lVersionMap.get(b.getParents().get(0).getName()).get(v);
+                if (b.getiDom() != null) {
+                    Integer val = lVersionMap.get(b.getiDom().getName()).get(v);
                     lVersionMap.get(b.getName()).put(v, val);
                 } else if (b.getParents().size() == 0) {
                     lVersionMap.get(b.getName()).put(v, 0);
-                } else {
-                    lVersionMap.get(b.getName()).put(v, varCount.get(v) + 1);
-                    varCount.put(v, varCount.get(v) + 1);
                 }
                 if (rVersionMap.get(b.getName()).containsKey(v)) {
                     continue;
                 }
-                if (b.getParents().size() == 1) {
-                    Integer val = lVersionMap.get(b.getParents().get(0).getName()).get(v);
+                if (b.getiDom() != null) {
+                    Integer val = lVersionMap.get(b.getiDom().getName()).get(v);
                     rVersionMap.get(b.getName()).put(v, val);
                 } else if (b.getParents().size() == 0) {
                     rVersionMap.get(b.getName()).put(v, 0);
-                } else {
-                    rVersionMap.get(b.getName()).put(v, varCount.get(v));
                 }
             }
         }
@@ -97,36 +89,24 @@ public class SSAOptimized implements CFGVisitor {
             if (blocksByAssignedVar.get(var).size() < 2) {
                 continue;
             }
-            for (BasicBlock b : blocksByAssignedVar.get(var)) {
+            ArrayList<BasicBlock> workList = new ArrayList<>(blocksByAssignedVar.get(var));
+            int i = 0;
+            while (i < workList.size()) {
+                BasicBlock b = workList.get(i);
                 for (BasicBlock d : b.getDF()) {
                     if (!phiBlocks.get(var).contains(d) && !d.isFail()) {
                         hasPhiBlocks = true;
                         phiBlocks.get(var).add(d);
+                        workList.add(d);
                     }
                 }
+                i++;
             }
         }
 
         if (!hasPhiBlocks) {
             return;
         }
-
-        // for (String var : blocksByAssignedVar.keySet()) {
-        // System.out.print(var + ":");
-        // for (BasicBlock b : blocksByAssignedVar.get(var)) {
-        // System.out.print(" " + b.getName());
-        // }
-        // System.out.print("\n");
-        // }
-        // System.out.print("\n");
-
-        // for (String v : phiBlocks.keySet()) {
-        // System.out.print(v + ":");
-        // for (BasicBlock b : phiBlocks.get(v)) {
-        // System.out.print(" " + b.getName());
-        // }
-        // System.out.print("\n");
-        // }
 
         for (String v : phiBlocks.keySet()) {
             for (BasicBlock b : phiBlocks.get(v)) {
