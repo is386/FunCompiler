@@ -49,9 +49,21 @@ public class Dom {
                     continue;
                 }
                 if (b.getiDom() == null || dom.getNum() > b.getiDom().getNum()) {
+                    if (b.getiDom() != null) {
+                        b.getiDom().removeDominate(b);
+                    }
                     b.setiDom(dom);
+                    dom.addDominate(b);
                 }
             }
+        }
+
+        for (BasicBlock b : cfg.getBlocks()) {
+            System.out.print(b.getName() + ": ");
+            for (BasicBlock d : b.getDominates()) {
+                System.out.print(d.getName() + " ");
+            }
+            System.out.print("\n");
         }
 
         for (BasicBlock b : cfg.getBlocks()) {
