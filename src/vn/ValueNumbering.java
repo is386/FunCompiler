@@ -22,19 +22,20 @@ public class ValueNumbering implements CFGVisitor {
 
             for (BasicBlock b : cfg.getBlocks()) {
                 if (blockNames.contains(b.getName()) && !b.getName().startsWith("l")) {
-                    dvnt(b);
+                    b.accept(this);
                 }
             }
         }
     }
 
-    public void dvnt(BasicBlock b) {
-        if (b.isFail()) {
+    @Override
+    public void visit(BasicBlock node) {
+        if (node.isFail()) {
             return;
         }
         HashMap<Primitive, Primitive> hashTable = new HashMap<>(hashTables.peek());
 
-        for (IREqual phi : b.getPhiNodes()) {
+        for (IREqual phi : node.getPhiNodes()) {
             Primitive p = phi.getPrimitive();
             Primitive n = phi.getVar();
 
@@ -51,7 +52,7 @@ public class ValueNumbering implements CFGVisitor {
         // Statements to remove later
         ArrayList<IREqual> toRemove = new ArrayList<>();
 
-        for (IRStmt stmt : b.getStatements()) {
+        for (IRStmt stmt : node.getStatements()) {
             // If its not an equal statement, skip it
             if (!(stmt instanceof IREqual)) {
                 continue;
@@ -119,10 +120,10 @@ public class ValueNumbering implements CFGVisitor {
         hashTables.add(hashTable);
 
         for (IREqual ir : toRemove) {
-            b.removeStatement(ir);
+            node.removeStatement(ir);
         }
 
-        ControlStmt c = b.getControlStmt();
+        ControlStmt c = node.getControlStmt();
         if (c instanceof ControlCond) {
             ControlCond cc = (ControlCond) c;
             if (VN.containsKey(cc.getCond())) {
@@ -130,9 +131,15 @@ public class ValueNumbering implements CFGVisitor {
             }
         }
 
+        for (BasicBlock s : node.getChildren()) {
+            for (IREqual phi : s.getPhiNodes()) {
+                phi.getPrimitive().accept(this);
+            }
+        }
+
         // Traverse dominator tree
-        for (BasicBlock d : b.getdomChildren()) {
-            dvnt(d);
+        for (BasicBlock d : node.getdomChildren()) {
+            d.accept(this);
         }
         hashTables.pop();
     }
@@ -202,16 +209,12 @@ public class ValueNumbering implements CFGVisitor {
 
     @Override
     public void visit(StorePrimitive node) {
-        if (VN.containsKey(node.getLocation())) {
-            node.setLocation(VN.get(node.getLocation()));
-        }
+        // if (VN.containsKey(node.getLocation())) {
+        // node.setLocation(VN.get(node.getLocation()));
+        // }
         if (VN.containsKey(node.getValue())) {
             node.setValue(VN.get(node.getValue()));
         }
-    }
-
-    @Override
-    public void visit(BasicBlock node) {
     }
 
     @Override
