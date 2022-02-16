@@ -31,6 +31,33 @@ public class SSAOptimized implements CFGVisitor {
             }
             currentBlocks = cfg.getFuncBlocks(i);
             setVersions(cfg.getBlocks());
+
+            for (BasicBlock b : cfg.getBlocks()) {
+                if (!currentBlocks.contains(b.getName()) || b.isFail()) {
+                    continue;
+                }
+
+                ArrayList<Primitive> vars = new ArrayList<>();
+                for (IRStmt ir : b.getStatements()) {
+                    if (ir instanceof IREqual) {
+                        IREqual ire = (IREqual) ir;
+                        Primitive v = ire.getVar();
+
+                        if (vars.contains(v)) {
+                            int idx = vars.indexOf(v);
+                            VarPrimitive v2 = (VarPrimitive) vars.get(idx);
+                            if (v2.getVersion() > 0) {
+                                v2.setVersion(v2.getVersion() - 1);
+                            }
+                            vars.remove(v2);
+                            vars.add(v);
+                        } else if (v != null) {
+                            vars.add(v);
+                        }
+                    }
+                }
+            }
+
             reset();
         }
 
