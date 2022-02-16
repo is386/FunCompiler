@@ -3,11 +3,19 @@ package cfg.primitives;
 import visitor.CFGVisitor;
 
 public class StorePrimitive extends Primitive {
-    private final Primitive location;
-    private final Primitive value;
+    private Primitive location;
+    private Primitive value;
 
     public StorePrimitive(Primitive location, Primitive value) {
         this.location = location;
+        this.value = value;
+    }
+
+    public void setLocation(Primitive location) {
+        this.location = location;
+    }
+
+    public void setValue(Primitive value) {
         this.value = value;
     }
 

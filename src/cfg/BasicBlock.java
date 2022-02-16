@@ -196,7 +196,7 @@ public class BasicBlock {
         }
         s += ":\n";
         for (IREqual ir : phiNodes) {
-            s += " " + ir + "\n";
+            s += "    " + ir + "\n";
         }
         for (IRStmt ir : statements) {
             s += "    " + ir + "\n";

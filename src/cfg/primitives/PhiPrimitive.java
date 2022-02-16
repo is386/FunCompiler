@@ -11,6 +11,10 @@ public class PhiPrimitive extends Primitive {
     public PhiPrimitive() {
     }
 
+    public LinkedHashMap<String, Primitive> getVarMap() {
+        return varMap;
+    }
+
     public void setVarMap(LinkedHashMap<String, Primitive> v) {
         varMap = v;
     }
@@ -32,4 +36,20 @@ public class PhiPrimitive extends Primitive {
         visitor.visit(this);
     }
 
+    @Override
+    public int hashCode() {
+        return 5;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof PhiPrimitive)) {
+            return false;
+        }
+        PhiPrimitive i = (PhiPrimitive) o;
+        return i.getVarMap().equals(this.varMap);
+    }
 }

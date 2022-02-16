@@ -24,6 +24,14 @@ public class ControlCond extends ControlStmt {
         cond = c;
     }
 
+    public String getIf() {
+        return ifBranch;
+    }
+
+    public String getElse() {
+        return elseBranch;
+    }
+
     @Override
     public String toString() {
         return "    if " + cond + " then " + ifBranch + " else " + elseBranch;

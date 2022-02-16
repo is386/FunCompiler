@@ -3,10 +3,14 @@ package cfg.primitives;
 import visitor.CFGVisitor;
 
 public class PrintPrimitive extends Primitive {
-    private final Primitive primitive;
+    private Primitive primitive;
 
     public PrintPrimitive(Primitive p) {
         this.primitive = p;
+    }
+
+    public void setPrimitive(Primitive p) {
+        primitive = p;
     }
 
     public Primitive getPrimitive() {

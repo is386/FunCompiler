@@ -69,8 +69,9 @@ public class Main {
         }
         ssa.visit(cfg);
 
+        ValueNumbering vn = new ValueNumbering();
         if (doVN) {
-            ValueNumbering.doVN(cfg);
+            vn.visit(cfg);
         }
 
         System.out.println(cfg);

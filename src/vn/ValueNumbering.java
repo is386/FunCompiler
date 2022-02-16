@@ -1,23 +1,23 @@
 package vn;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 import cfg.BasicBlock;
 import cfg.CFG;
 import cfg.primitives.*;
 import cfg.stmt.*;
+import visitor.CFGVisitor;
 
-public class ValueNumbering {
+public class ValueNumbering implements CFGVisitor {
 
-    private static HashMap<Primitive, Primitive> VN = new HashMap<>();
-    private static HashMap<Primitive, Primitive> hashTable = new HashMap<>();
+    private HashMap<Primitive, Primitive> VN = new HashMap<>();
+    private Stack<HashMap<Primitive, Primitive>> hashTables = new Stack<>();
 
-    public static void doVN(CFG cfg) {
+    public void visit(CFG cfg) {
         for (int i = 0; i < cfg.getNumFuncs(); i++) {
             VN = new HashMap<>();
-            hashTable = new HashMap<>();
+            hashTables = new Stack<>();
+            hashTables.add(new HashMap<>());
             HashSet<String> blockNames = cfg.getFuncBlocks(i);
 
             for (BasicBlock b : cfg.getBlocks()) {
@@ -28,10 +28,11 @@ public class ValueNumbering {
         }
     }
 
-    public static void dvnt(BasicBlock b) {
+    public void dvnt(BasicBlock b) {
         if (b.isFail()) {
             return;
         }
+        HashMap<Primitive, Primitive> hashTable = new HashMap<>(hashTables.peek());
 
         for (IREqual phi : b.getPhiNodes()) {
             Primitive p = phi.getPrimitive();
@@ -48,7 +49,7 @@ public class ValueNumbering {
         }
 
         // Statements to remove later
-        ArrayList<IRStmt> toRemove = new ArrayList<>();
+        ArrayList<IREqual> toRemove = new ArrayList<>();
 
         for (IRStmt stmt : b.getStatements()) {
             // If its not an equal statement, skip it
@@ -71,6 +72,7 @@ public class ValueNumbering {
 
             // If the right side is not an arithmetic operation, skip this statement
             if (!(a.getPrimitive() instanceof ArithPrimitive)) {
+                a.getPrimitive().accept(this);
                 continue;
             }
 
@@ -85,11 +87,14 @@ public class ValueNumbering {
             Primitive y = oldExpr.getOperand1();
             Primitive z = oldExpr.getOperand2();
 
-            if (y instanceof IntPrimitive) {
+            if (y instanceof IntPrimitive || y instanceof ThisPrimitive) {
                 VN.put(y, y);
             }
-            if (z instanceof IntPrimitive) {
+            if (z instanceof IntPrimitive || z instanceof ThisPrimitive) {
                 VN.put(z, z);
+            }
+            if (VN.get(y) == null || (VN.get(z) == null)) {
+                continue;
             }
 
             // Store operands VN[y] and VN[z] in new expression and overwrite
@@ -111,19 +116,153 @@ public class ValueNumbering {
             }
         }
 
-        for (IRStmt ir : toRemove) {
+        hashTables.add(hashTable);
+
+        for (IREqual ir : toRemove) {
             b.removeStatement(ir);
         }
 
         ControlStmt c = b.getControlStmt();
         if (c instanceof ControlCond) {
             ControlCond cc = (ControlCond) c;
-            cc.setCond(VN.get(cc.getCond()));
+            if (VN.containsKey(cc.getCond())) {
+                cc.setCond(VN.get(cc.getCond()));
+            }
         }
 
         // Traverse dominator tree
         for (BasicBlock d : b.getdomChildren()) {
             dvnt(d);
         }
+        hashTables.pop();
+    }
+
+    @Override
+    public void visit(CallPrimitive node) {
+        if (VN.containsKey(node.getCaller())) {
+            node.setCaller(VN.get(node.getCaller()));
+        }
+        if (VN.containsKey(node.getCodeAddress())) {
+            node.setCodeAddress(VN.get(node.getCodeAddress()));
+        }
+        for (Primitive p : node.getArgs()) {
+            int i = node.getArgs().indexOf(p);
+            if (VN.containsKey(p)) {
+                node.getArgs().set(i, VN.get(p));
+            }
+        }
+    }
+
+    @Override
+    public void visit(GetEltPrimitive node) {
+        if (VN.containsKey(node.getPrimitive())) {
+            node.setPrimitive(VN.get(node.getPrimitive()));
+        }
+        if (VN.containsKey(node.getOffset())) {
+            node.setOffset(VN.get(node.getOffset()));
+        }
+    }
+
+    @Override
+    public void visit(LoadPrimitive node) {
+        if (VN.containsKey(node.getPrimitive())) {
+            node.setPrimitive(VN.get(node.getPrimitive()));
+        }
+    }
+
+    @Override
+    public void visit(PhiPrimitive node) {
+        for (String l : node.getVarMap().keySet()) {
+            Primitive p = node.getVarMap().get(l);
+            if (VN.containsKey(p)) {
+                node.getVarMap().put(l, VN.get(p));
+            }
+        }
+    }
+
+    @Override
+    public void visit(PrintPrimitive node) {
+        if (VN.containsKey(node.getPrimitive())) {
+            node.setPrimitive(VN.get(node.getPrimitive()));
+        }
+    }
+
+    @Override
+    public void visit(SetEltPrimitive node) {
+        if (VN.containsKey(node.getLocation())) {
+            node.setLocation(VN.get(node.getLocation()));
+        }
+        if (VN.containsKey(node.getVar())) {
+            node.setVar(VN.get(node.getVar()));
+        }
+        if (VN.containsKey(node.getValue())) {
+            node.setValue(VN.get(node.getValue()));
+        }
+    }
+
+    @Override
+    public void visit(StorePrimitive node) {
+        if (VN.containsKey(node.getLocation())) {
+            node.setLocation(VN.get(node.getLocation()));
+        }
+        if (VN.containsKey(node.getValue())) {
+            node.setValue(VN.get(node.getValue()));
+        }
+    }
+
+    @Override
+    public void visit(BasicBlock node) {
+    }
+
+    @Override
+    public void visit(IREqual node) {
+    }
+
+    @Override
+    public void visit(IRFail node) {
+    }
+
+    @Override
+    public void visit(IRData node) {
+    }
+
+    @Override
+    public void visit(ControlCond node) {
+    }
+
+    @Override
+    public void visit(ControlJump node) {
+    }
+
+    @Override
+    public void visit(ControlReturn node) {
+    }
+
+    @Override
+    public void visit(AllocPrimitive node) {
+    }
+
+    @Override
+    public void visit(ArithPrimitive node) {
+    }
+
+    @Override
+    public void visit(GlobalPrimitive node) {
+    }
+
+    @Override
+    public void visit(IntPrimitive node) {
+    }
+
+    @Override
+    public void visit(TempPrimitive node) {
+    }
+
+    @Override
+    public void visit(ThisPrimitive node) {
+    }
+
+    @Override
+    public void visit(VarPrimitive node) {
     }
 }

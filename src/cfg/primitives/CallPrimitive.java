@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import visitor.CFGVisitor;
 
 public class CallPrimitive extends Primitive {
-    private final Primitive codeAddress;
-    private final Primitive caller;
+    private Primitive codeAddress;
+    private Primitive caller;
     private ArrayList<Primitive> args = new ArrayList<>();
 
     public CallPrimitive(Primitive codeAddress, Primitive caller) {
@@ -30,6 +30,14 @@ public class CallPrimitive extends Primitive {
         if (arg != null) {
             args.add(arg);
         }
+    }
+
+    public void setCodeAddress(Primitive codeAddress) {
+        this.codeAddress = codeAddress;
+    }
+
+    public void setCaller(Primitive caller) {
+        this.caller = caller;
     }
 
     @Override

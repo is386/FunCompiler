@@ -3,13 +3,25 @@ package cfg.primitives;
 import visitor.CFGVisitor;
 
 public class SetEltPrimitive extends Primitive {
-    private final Primitive var;
-    private final Primitive location;
-    private final Primitive value;
+    private Primitive var;
+    private Primitive location;
+    private Primitive value;
 
     public SetEltPrimitive(Primitive var, Primitive location, Primitive value) {
         this.var = var;
         this.location = location;
+        this.value = value;
+    }
+
+    public void setVar(Primitive var) {
+        this.var = var;
+    }
+
+    public void setLocation(Primitive location) {
+        this.location = location;
+    }
+
+    public void setValue(Primitive value) {
         this.value = value;
     }
 

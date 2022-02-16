@@ -3,11 +3,19 @@ package cfg.primitives;
 import visitor.CFGVisitor;
 
 public class GetEltPrimitive extends Primitive {
-    private final Primitive primitive;
-    private final Primitive offset;
+    private Primitive primitive;
+    private Primitive offset;
 
     public GetEltPrimitive(Primitive p, Primitive offset) {
         this.primitive = p;
+        this.offset = offset;
+    }
+
+    public void setPrimitive(Primitive primitive) {
+        this.primitive = primitive;
+    }
+
+    public void setOffset(Primitive offset) {
         this.offset = offset;
     }
 
