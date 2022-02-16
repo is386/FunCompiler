@@ -50,10 +50,10 @@ public class Dom {
                 }
                 if (b.getiDom() == null || dom.getNum() > b.getiDom().getNum()) {
                     if (b.getiDom() != null) {
-                        b.getiDom().removeDominate(b);
+                        b.getiDom().removeDomChild(b);
                     }
                     b.setiDom(dom);
-                    dom.addDominate(b);
+                    dom.addDomChild(b);
                 }
             }
         }

@@ -5,7 +5,7 @@ import visitor.CFGVisitor;
 
 public class IREqual extends IRStmt {
     private Primitive var;
-    private final Primitive primitive;
+    private Primitive primitive;
 
     public IREqual(Primitive var, Primitive primitive) {
         this.var = var;
@@ -17,6 +17,10 @@ public class IREqual extends IRStmt {
 
     public Primitive getPrimitive() {
         return primitive;
+    }
+
+    public void setPrimitive(Primitive p) {
+        primitive = p;
     }
 
     public Primitive getVar() {

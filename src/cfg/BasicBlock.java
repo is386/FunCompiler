@@ -18,7 +18,7 @@ public class BasicBlock {
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
     private HashSet<BasicBlock> dominators = new HashSet<>();
-    private HashSet<BasicBlock> dominates = new HashSet<>();
+    private HashSet<BasicBlock> domChildren = new HashSet<>();
     private BasicBlock iDom = null;
     private HashSet<BasicBlock> df = new HashSet<>();
     private ArrayList<String> params = new ArrayList<>();
@@ -138,16 +138,16 @@ public class BasicBlock {
         this.df = new HashSet<>(df);
     }
 
-    public HashSet<BasicBlock> getDominates() {
-        return dominates;
+    public HashSet<BasicBlock> getdomChildren() {
+        return domChildren;
     }
 
-    public void addDominate(BasicBlock d) {
-        this.dominates.add(d);
+    public void addDomChild(BasicBlock d) {
+        this.domChildren.add(d);
     }
 
-    public void removeDominate(BasicBlock d) {
-        this.dominates.remove(d);
+    public void removeDomChild(BasicBlock d) {
+        this.domChildren.remove(d);
     }
 
     public void printDominators() {

@@ -53,6 +53,6 @@ public class IntPrimitive extends Primitive {
             return false;
         }
         IntPrimitive i = (IntPrimitive) o;
-        return i.getValue() == this.getValue();
+        return i.toString().equals(this.strValue);
     }
 }

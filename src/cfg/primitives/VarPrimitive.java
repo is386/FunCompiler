@@ -61,6 +61,6 @@ public class VarPrimitive extends Primitive {
             return false;
         }
         VarPrimitive i = (VarPrimitive) o;
-        return i.getName().equals(this.getName()) && i.getVersion() == this.version;
+        return i.getName().equals(this.name) && i.getVersion() == this.version;
     }
 }

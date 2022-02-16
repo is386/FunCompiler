@@ -6,7 +6,7 @@ import cfg.primitives.Primitive;
 import visitor.CFGVisitor;
 
 public class ControlCond extends ControlStmt {
-    private final Primitive cond;
+    private Primitive cond;
     private final String ifBranch;
     private final String elseBranch;
 
@@ -18,6 +18,10 @@ public class ControlCond extends ControlStmt {
 
     public Primitive getCond() {
         return cond;
+    }
+
+    public void setCond(Primitive c) {
+        cond = c;
     }
 
     @Override
