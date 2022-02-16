@@ -59,14 +59,6 @@ public class Dom {
         }
 
         for (BasicBlock b : cfg.getBlocks()) {
-            System.out.print(b.getName() + ": ");
-            for (BasicBlock d : b.getDominates()) {
-                System.out.print(d.getName() + " ");
-            }
-            System.out.print("\n");
-        }
-
-        for (BasicBlock b : cfg.getBlocks()) {
             if (b.getParents().size() > 1) {
                 for (BasicBlock p : b.getParents()) {
                     BasicBlock runner = p;

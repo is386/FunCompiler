@@ -29,6 +29,10 @@ public class ArithPrimitive extends Primitive {
         operand2 = p;
     }
 
+    public String getOp() {
+        return this.op;
+    }
+
     @Override
     public String toString() {
         return String.format("%s %s %s", operand1, op, operand2);
@@ -42,5 +46,26 @@ public class ArithPrimitive extends Primitive {
     @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return 4;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof ArithPrimitive)) {
+            return false;
+        }
+        ArithPrimitive i = (ArithPrimitive) o;
+        return i.getOp().equals(this.op) &&
+                ((i.getOperand1().equals(this.operand1) &&
+                        i.getOperand2().equals(this.operand2)) ||
+                        (i.getOperand2().equals(this.operand1) &&
+                                i.getOperand1().equals(this.operand2)));
     }
 }

@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Stack;
 
 import cfg.stmt.ControlStmt;
+import cfg.stmt.IREqual;
 import cfg.stmt.IRStmt;
 import visitor.CFGVisitor;
 
@@ -12,6 +13,7 @@ public class BasicBlock {
     private final String name;
     private final Integer num;
     private Stack<IRStmt> statements = new Stack<>();
+    private ArrayList<IREqual> phiNodes = new ArrayList<>();
     private ControlStmt control = null;
     private ArrayList<BasicBlock> parents = new ArrayList<>();
     private ArrayList<BasicBlock> children = new ArrayList<>();
@@ -167,6 +169,22 @@ public class BasicBlock {
         return num;
     }
 
+    public ArrayList<IREqual> getPhiNodes() {
+        return phiNodes;
+    }
+
+    public void addPhiNode(IREqual p) {
+        phiNodes.add(p);
+    }
+
+    public void removePhiNode(IREqual p) {
+        phiNodes.remove(p);
+    }
+
+    public void removeStatement(IRStmt ir) {
+        statements.remove(ir);
+    }
+
     public String toString() {
         String s = name;
         if (!params.isEmpty()) {
@@ -177,6 +195,9 @@ public class BasicBlock {
             s = s.substring(0, s.length() - 2) + ")";
         }
         s += ":\n";
+        for (IREqual ir : phiNodes) {
+            s += " " + ir + "\n";
+        }
         for (IRStmt ir : statements) {
             s += "    " + ir + "\n";
         }

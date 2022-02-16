@@ -9,12 +9,14 @@ import parse.Parser;
 import ssa.SSAOptimized;
 import ssa.SSAUnoptimized;
 import visitor.CFGVisitor;
+import vn.ValueNumbering;
 
 // TODO: Fix bugs found in crazy.441
 
 public class Main {
     private static boolean doOpt = true;
     private static boolean oldSSA = false;
+    private static boolean doVN = true;
 
     private static void parseArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
@@ -22,6 +24,8 @@ public class Main {
                 doOpt = false;
             } else if (args[i].toLowerCase().equals("-oldssa")) {
                 oldSSA = true;
+            } else if (args[i].toLowerCase().equals("-novn")) {
+                doVN = false;
             }
         }
     }
@@ -64,6 +68,10 @@ public class Main {
             ssa = new SSAOptimized();
         }
         ssa.visit(cfg);
+
+        if (doVN) {
+            ValueNumbering.doVN(cfg);
+        }
 
         System.out.println(cfg);
     }

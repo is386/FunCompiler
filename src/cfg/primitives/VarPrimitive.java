@@ -34,6 +34,10 @@ public class VarPrimitive extends Primitive {
         name = n;
     }
 
+    public int getVersion() {
+        return version;
+    }
+
     public void setVersion(int v) {
         version = v;
     }
@@ -41,5 +45,22 @@ public class VarPrimitive extends Primitive {
     @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return 2;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof VarPrimitive)) {
+            return false;
+        }
+        VarPrimitive i = (VarPrimitive) o;
+        return i.getName().equals(this.getName()) && i.getVersion() == this.version;
     }
 }

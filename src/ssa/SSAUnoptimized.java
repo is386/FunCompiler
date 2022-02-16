@@ -103,7 +103,7 @@ public class SSAUnoptimized implements CFGVisitor {
                 Integer val = rVersionMap.get(b.getName()).get(v);
                 var.setVersion(val);
                 IREqual ir = new IREqual(var, phiNode);
-                b.insertStart(ir);
+                b.addPhiNode(ir);
             }
         }
 

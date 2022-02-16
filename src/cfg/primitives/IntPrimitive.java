@@ -20,6 +20,15 @@ public class IntPrimitive extends Primitive {
         return strValue;
     }
 
+    public long getValue() {
+        return value;
+    }
+
+    @Override
+    public String getName() {
+        return strValue;
+    }
+
     @Override
     public Type getType() {
         return Type.INTEGER;
@@ -28,5 +37,22 @@ public class IntPrimitive extends Primitive {
     @Override
     public void accept(CFGVisitor visitor) {
         visitor.visit(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return 0;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+        if (!(o instanceof IntPrimitive)) {
+            return false;
+        }
+        IntPrimitive i = (IntPrimitive) o;
+        return i.getValue() == this.getValue();
     }
 }
