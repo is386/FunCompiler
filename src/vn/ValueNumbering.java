@@ -12,6 +12,8 @@ public class ValueNumbering implements CFGVisitor {
 
     private HashMap<Primitive, Primitive> VN = new HashMap<>();
     private Stack<HashMap<Primitive, Primitive>> hashTables = new Stack<>();
+    private boolean replaceCond = false;
+    private String jumpTo;
 
     public void visit(CFG cfg) {
         for (int i = 0; i < cfg.getNumFuncs(); i++) {
@@ -102,6 +104,8 @@ public class ValueNumbering implements CFGVisitor {
                 continue;
             }
 
+            Primitive a2;
+
             // Store operands VN[y] and VN[z] in new expression and overwrite
             // old expression
             newExpr.setOperand1(VN.get(y));
@@ -109,15 +113,40 @@ public class ValueNumbering implements CFGVisitor {
             oldExpr.setOperand1(VN.get(y));
             oldExpr.setOperand2(VN.get(z));
 
+            // Check identities and replace if necessary
+            a2 = newExpr;
+            Primitive identity = minusIdentity(newExpr);
+            if (!identity.equals(newExpr)) {
+                a.setPrimitive(identity);
+                a2 = identity;
+            }
+            identity = andIdentity(newExpr);
+            if (!identity.equals(newExpr)) {
+                a.setPrimitive(identity);
+                a2 = identity;
+            }
+            identity = addIdentity(newExpr);
+            if (!identity.equals(newExpr)) {
+                a.setPrimitive(identity);
+                a2 = identity;
+            }
+
+            // If the identity is replaced, we can put it into VN and continue
+            if (!(a.getPrimitive() instanceof ArithPrimitive)) {
+                VN.put(x, a.getPrimitive());
+                toRemove.add(a);
+                continue;
+            }
+
             // If the new expression is found in the hashtable, replace it's
             // left side with the value number of the expression and remove a
-            if (hashTable.containsKey(newExpr)) {
-                Primitive v = hashTable.get(newExpr);
+            if (hashTable.containsKey(a2)) {
+                Primitive v = hashTable.get(a2);
                 VN.put(x, v);
                 toRemove.add(a);
             } else {
                 VN.put(x, x);
-                hashTable.put(newExpr, x);
+                hashTable.put(a2, x);
             }
         }
 
@@ -127,14 +156,16 @@ public class ValueNumbering implements CFGVisitor {
             node.removeStatement(ir);
         }
 
-        ControlStmt c = node.getControlStmt();
-        if (c instanceof ControlCond) {
-            ControlCond cc = (ControlCond) c;
-            if (VN.containsKey(cc.getCond())) {
-                cc.setCond(VN.get(cc.getCond()));
-            }
-        }
+        // Replace conditional if needed
+        node.getControlStmt().accept(this);
 
+        // If the condition is 1, then we can replace it with a jump
+        if (replaceCond) {
+            node.setControlStmt(new ControlJump(jumpTo));
+        }
+        replaceCond = false;
+
+        // Replace values in successor phi nodes
         for (BasicBlock s : node.getChildren()) {
             for (IREqual phi : s.getPhiNodes()) {
                 phi.getPrimitive().accept(this);
@@ -146,6 +177,45 @@ public class ValueNumbering implements CFGVisitor {
             d.accept(this);
         }
         hashTables.pop();
+    }
+
+    private Primitive minusIdentity(ArithPrimitive arith) {
+        Primitive x = arith.getOperand1();
+        Primitive y = arith.getOperand2();
+        String op = arith.getOp();
+
+        if (op.equals("-") && x.equals(y)) {
+            return new IntPrimitive(0, false);
+        }
+
+        return arith;
+    }
+
+    private Primitive andIdentity(ArithPrimitive arith) {
+        Primitive x = arith.getOperand1();
+        Primitive y = arith.getOperand2();
+        String op = arith.getOp();
+
+        if (op.equals("&") && x.equals(y)) {
+            return x;
+        }
+
+        return arith;
+    }
+
+    private Primitive addIdentity(ArithPrimitive arith) {
+        Primitive x = arith.getOperand1();
+        Primitive y = arith.getOperand2();
+        Primitive zero = new IntPrimitive(0, false);
+        String op = arith.getOp();
+
+        if (op.equals("+") && (x.equals(zero))) {
+            return y;
+        } else if (op.equals("+") && (y.equals(zero))) {
+            return x;
+        }
+
+        return arith;
     }
 
     private boolean notAlloc(Primitive p) {
@@ -217,11 +287,20 @@ public class ValueNumbering implements CFGVisitor {
 
     @Override
     public void visit(StorePrimitive node) {
-        // if (VN.containsKey(node.getLocation())) {
-        // node.setLocation(VN.get(node.getLocation()));
-        // }
         if (VN.containsKey(node.getValue()) && notAlloc(VN.get(node.getValue()))) {
             node.setValue(VN.get(node.getValue()));
+        }
+    }
+
+    @Override
+    public void visit(ControlCond node) {
+        if (VN.containsKey(node.getCond())) {
+            node.setCond(VN.get(node.getCond()));
+        }
+        Primitive one = new IntPrimitive(1, false);
+        if (node.getCond().equals(one)) {
+            jumpTo = node.getIf();
+            replaceCond = true;
         }
     }
 
@@ -235,10 +314,6 @@ public class ValueNumbering implements CFGVisitor {
 
     @Override
     public void visit(IRData node) {
-    }
-
-    @Override
-    public void visit(ControlCond node) {
     }
 
     @Override
