@@ -48,8 +48,6 @@ public class SSAOptimized implements CFGVisitor {
                             VarPrimitive v2 = (VarPrimitive) vars.get(idx);
                             if (v2.getVersion() > 0) {
                                 v2.setVersion(v2.getVersion() - 1);
-                            } else {
-                                v2.setVersion(9999);
                             }
                             vars.remove(v2);
                             vars.add(v);

@@ -71,6 +71,10 @@ public class ValueNumbering implements CFGVisitor {
                 a.setPrimitive(VN.get(x));
             }
 
+            if (a.getPrimitive() instanceof AllocPrimitive) {
+                VN.put(x, a.getPrimitive());
+            }
+
             // If the right side is not an arithmetic operation, skip this statement
             if (!(a.getPrimitive() instanceof ArithPrimitive)) {
                 a.getPrimitive().accept(this);
@@ -94,7 +98,7 @@ public class ValueNumbering implements CFGVisitor {
             if (z instanceof IntPrimitive || z instanceof ThisPrimitive) {
                 VN.put(z, z);
             }
-            if (VN.get(y) == null || (VN.get(z) == null)) {
+            if (VN.get(y) == null || (VN.get(z) == null) || !notAlloc(VN.get(y)) || !notAlloc(VN.get(z))) {
                 continue;
             }
 
@@ -144,17 +148,21 @@ public class ValueNumbering implements CFGVisitor {
         hashTables.pop();
     }
 
+    private boolean notAlloc(Primitive p) {
+        return !(p instanceof AllocPrimitive);
+    }
+
     @Override
     public void visit(CallPrimitive node) {
-        if (VN.containsKey(node.getCaller())) {
+        if (VN.containsKey(node.getCaller()) && notAlloc(VN.get(node.getCaller()))) {
             node.setCaller(VN.get(node.getCaller()));
         }
-        if (VN.containsKey(node.getCodeAddress())) {
+        if (VN.containsKey(node.getCodeAddress()) && notAlloc(VN.get(node.getCodeAddress()))) {
             node.setCodeAddress(VN.get(node.getCodeAddress()));
         }
         for (Primitive p : node.getArgs()) {
             int i = node.getArgs().indexOf(p);
-            if (VN.containsKey(p)) {
+            if (VN.containsKey(p) && notAlloc(VN.get(p))) {
                 node.getArgs().set(i, VN.get(p));
             }
         }
@@ -162,17 +170,17 @@ public class ValueNumbering implements CFGVisitor {
 
     @Override
     public void visit(GetEltPrimitive node) {
-        if (VN.containsKey(node.getPrimitive())) {
+        if (VN.containsKey(node.getPrimitive()) && notAlloc(VN.get(node.getPrimitive()))) {
             node.setPrimitive(VN.get(node.getPrimitive()));
         }
-        if (VN.containsKey(node.getOffset())) {
+        if (VN.containsKey(node.getOffset()) && notAlloc(VN.get(node.getOffset()))) {
             node.setOffset(VN.get(node.getOffset()));
         }
     }
 
     @Override
     public void visit(LoadPrimitive node) {
-        if (VN.containsKey(node.getPrimitive())) {
+        if (VN.containsKey(node.getPrimitive()) && notAlloc(VN.get(node.getPrimitive()))) {
             node.setPrimitive(VN.get(node.getPrimitive()));
         }
     }
@@ -181,7 +189,7 @@ public class ValueNumbering implements CFGVisitor {
     public void visit(PhiPrimitive node) {
         for (String l : node.getVarMap().keySet()) {
             Primitive p = node.getVarMap().get(l);
-            if (VN.containsKey(p)) {
+            if (VN.containsKey(p) && notAlloc(VN.get(p))) {
                 node.getVarMap().put(l, VN.get(p));
             }
         }
@@ -189,20 +197,20 @@ public class ValueNumbering implements CFGVisitor {
 
     @Override
     public void visit(PrintPrimitive node) {
-        if (VN.containsKey(node.getPrimitive())) {
+        if (VN.containsKey(node.getPrimitive()) && notAlloc(VN.get(node.getPrimitive()))) {
             node.setPrimitive(VN.get(node.getPrimitive()));
         }
     }
 
     @Override
     public void visit(SetEltPrimitive node) {
-        if (VN.containsKey(node.getLocation())) {
+        if (VN.containsKey(node.getLocation()) && notAlloc(VN.get(node.getLocation()))) {
             node.setLocation(VN.get(node.getLocation()));
         }
-        if (VN.containsKey(node.getVar())) {
+        if (VN.containsKey(node.getVar()) && notAlloc(VN.get(node.getVar()))) {
             node.setVar(VN.get(node.getVar()));
         }
-        if (VN.containsKey(node.getValue())) {
+        if (VN.containsKey(node.getValue()) && notAlloc(VN.get(node.getValue()))) {
             node.setValue(VN.get(node.getValue()));
         }
     }
@@ -212,7 +220,7 @@ public class ValueNumbering implements CFGVisitor {
         // if (VN.containsKey(node.getLocation())) {
         // node.setLocation(VN.get(node.getLocation()));
         // }
-        if (VN.containsKey(node.getValue())) {
+        if (VN.containsKey(node.getValue()) && notAlloc(VN.get(node.getValue()))) {
             node.setValue(VN.get(node.getValue()));
         }
     }
