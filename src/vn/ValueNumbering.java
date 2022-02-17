@@ -11,15 +11,15 @@ import visitor.CFGVisitor;
 public class ValueNumbering implements CFGVisitor {
 
     private HashMap<Primitive, Primitive> VN = new HashMap<>();
-    private Stack<HashMap<Primitive, Primitive>> hashTables = new Stack<>();
+    private Stack<HashMap<Primitive, Primitive>> scope = new Stack<>();
     private boolean replaceCond = false;
     private String jumpTo;
 
     public void visit(CFG cfg) {
         for (int i = 0; i < cfg.getNumFuncs(); i++) {
             VN = new HashMap<>();
-            hashTables = new Stack<>();
-            hashTables.add(new HashMap<>());
+            scope = new Stack<>();
+            scope.add(new HashMap<>());
             HashSet<String> blockNames = cfg.getFuncBlocks(i);
 
             for (BasicBlock b : cfg.getBlocks()) {
@@ -35,7 +35,9 @@ public class ValueNumbering implements CFGVisitor {
         if (node.isFail()) {
             return;
         }
-        HashMap<Primitive, Primitive> hashTable = new HashMap<>(hashTables.peek());
+
+        // Get the hash table for the current scope
+        HashMap<Primitive, Primitive> hashTable = new HashMap<>(scope.peek());
 
         for (IREqual phi : node.getPhiNodes()) {
             Primitive p = phi.getPrimitive();
@@ -150,8 +152,10 @@ public class ValueNumbering implements CFGVisitor {
             }
         }
 
-        hashTables.add(hashTable);
+        // Add the hash table for the current scope to the global list
+        scope.add(hashTable);
 
+        // Remove statements from block if necessary
         for (IREqual ir : toRemove) {
             node.removeStatement(ir);
         }
@@ -176,7 +180,9 @@ public class ValueNumbering implements CFGVisitor {
         for (BasicBlock d : node.getdomChildren()) {
             d.accept(this);
         }
-        hashTables.pop();
+
+        // Remove the hash table currently in scope
+        scope.pop();
     }
 
     private Primitive minusIdentity(ArithPrimitive arith) {
