@@ -2,8 +2,26 @@ package visitor;
 
 import cfg.BasicBlock;
 import cfg.CFG;
-import cfg.primitives.*;
-import cfg.stmt.*;
+import cfg.primitives.AllocPrimitive;
+import cfg.primitives.ArithPrimitive;
+import cfg.primitives.CallPrimitive;
+import cfg.primitives.GetEltPrimitive;
+import cfg.primitives.GlobalPrimitive;
+import cfg.primitives.IntPrimitive;
+import cfg.primitives.LoadPrimitive;
+import cfg.primitives.PhiPrimitive;
+import cfg.primitives.PrintPrimitive;
+import cfg.primitives.SetEltPrimitive;
+import cfg.primitives.StorePrimitive;
+import cfg.primitives.TempPrimitive;
+import cfg.primitives.ThisPrimitive;
+import cfg.primitives.VarPrimitive;
+import cfg.stmt.ControlCond;
+import cfg.stmt.ControlJump;
+import cfg.stmt.ControlReturn;
+import cfg.stmt.IRData;
+import cfg.stmt.IREqual;
+import cfg.stmt.IRFail;
 
 public interface CFGVisitor {
 

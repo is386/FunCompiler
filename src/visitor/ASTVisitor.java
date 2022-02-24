@@ -3,8 +3,20 @@ package visitor;
 import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.*;
-import ast.stmt.*;
+import ast.expr.ArithExpr;
+import ast.expr.ClassExpr;
+import ast.expr.FieldExpr;
+import ast.expr.IntExpr;
+import ast.expr.MethodExpr;
+import ast.expr.NullExpr;
+import ast.expr.ThisExpr;
+import ast.expr.VarExpr;
+import ast.stmt.AssignStmt;
+import ast.stmt.IfStmt;
+import ast.stmt.PrintStmt;
+import ast.stmt.ReturnStmt;
+import ast.stmt.UpdateStmt;
+import ast.stmt.WhileStmt;
 
 public interface ASTVisitor {
 
@@ -39,4 +51,6 @@ public interface ASTVisitor {
     public void visit(ClassExpr node);
 
     public void visit(ArithExpr node);
+
+    public void visit(NullExpr node);
 }

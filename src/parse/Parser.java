@@ -1,12 +1,31 @@
 package parse;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.*;
-import ast.stmt.*;
+import ast.expr.ASTExpr;
+import ast.expr.ArithExpr;
+import ast.expr.ClassExpr;
+import ast.expr.FieldExpr;
+import ast.expr.IntExpr;
+import ast.expr.MethodExpr;
+import ast.expr.NullExpr;
+import ast.expr.OPExpr;
+import ast.expr.ThisExpr;
+import ast.expr.TypedVarExpr;
+import ast.expr.VarExpr;
+import ast.stmt.ASTStmt;
+import ast.stmt.AssignStmt;
+import ast.stmt.IfStmt;
+import ast.stmt.PrintStmt;
+import ast.stmt.ReturnStmt;
+import ast.stmt.UpdateStmt;
+import ast.stmt.WhileStmt;
 
 public class Parser {
     private final Iterator<String> lines;
@@ -48,13 +67,15 @@ public class Parser {
     }
 
     private void parseClassFields(ClassDecl classDecl, String line) {
-        String[] parts;
+        ParsePair pair;
         if (line.startsWith("fields")) {
             line = line.replace("fields", "");
-            while (!line.isEmpty()) {
-                parts = parseVar(line.substring(1));
-                classDecl.addField(parts[0]);
-                line = parts[1];
+            if (!line.stripLeading().isEmpty()) {
+                while (!line.isEmpty()) {
+                    pair = parseTypedVarExpr(line.substring(1));
+                    classDecl.addField((TypedVarExpr) pair.getNode());
+                    line = pair.getLine().stripLeading();
+                }
             }
         }
     }
@@ -67,14 +88,17 @@ public class Parser {
         while (!line.equals("]")) {
             if (line.startsWith("method")) {
                 line = "x" + "." + line.replace("method", "");
-                pair = parseMethodExpr(line);
-                methodDecl = new MethodDecl((MethodExpr) pair.getNode());
-                line = pair.getLine().replace("with locals", "");
-
-                while (!line.isEmpty() && !line.equals(":")) {
-                    parts = parseVar(line.substring(1));
-                    methodDecl.addLocalVar(parts[0]);
-                    line = parts[1];
+                pair = parseMethodExpr(line, true);
+                line = pair.getLine().replace("returning", "");
+                parts = parseVar(line.substring(1));
+                methodDecl = new MethodDecl((MethodExpr) pair.getNode(), classDecl.getName(), parts[0]);
+                line = parts[1].substring(1).replace("with locals", "");
+                if (!line.stripLeading().stripTrailing().equals(":")) {
+                    while (!line.isEmpty() && !line.equals(":")) {
+                        pair = parseTypedVarExpr(line.substring(1));
+                        methodDecl.addLocalVar((TypedVarExpr) pair.getNode());
+                        line = pair.getLine().stripLeading();
+                    }
                 }
                 classDecl.addMethod(methodDecl);
 
@@ -90,13 +114,15 @@ public class Parser {
             return;
         }
 
-        String[] parts;
+        ParsePair pair;
         line = line.split("with")[1];
 
-        while (!line.equals(":")) {
-            parts = parseVar(line.substring(1));
-            line = parts[1];
-            p.addVar(parts[0]);
+        if (!line.stripLeading().stripTrailing().equals(":")) {
+            while (!line.equals(":") && !line.isBlank()) {
+                pair = parseTypedVarExpr(line.substring(1));
+                line = pair.getLine().stripLeading().stripTrailing();
+                p.addVar((TypedVarExpr) pair.getNode());
+            }
         }
     }
 
@@ -130,6 +156,8 @@ public class Parser {
 
         if (Character.isDigit(first))
             return parseIntExpr(line);
+        else if (line.startsWith("null"))
+            return parseNullExpr(line);
         else if (Character.isLetter(first))
             return parseVarExpr(line);
         else if (first == '(')
@@ -137,7 +165,7 @@ public class Parser {
         else if (ops.contains(first))
             return new ParsePair(new OPExpr(first), line.substring(1));
         else if (first == '^')
-            return parseMethodExpr(line.substring(1));
+            return parseMethodExpr(line.substring(1), false);
         else if (first == '&')
             return parseFieldExpr(line.substring(1));
         else if (first == '@')
@@ -276,6 +304,13 @@ public class Parser {
         return new ParsePair(node, parts[1]);
     }
 
+    private ParsePair parseNullExpr(String line) {
+        line = line.stripLeading();
+        ParsePair pair = parseTypedVarExpr(line);
+        ASTExpr node = new NullExpr(((TypedVarExpr) pair.getNode()).getType());
+        return new ParsePair(node, pair.getLine());
+    }
+
     private ParsePair parseVarExpr(String line) {
         line = line.stripLeading();
         String[] parts = parseVar(line);
@@ -302,7 +337,7 @@ public class Parser {
         return new ParsePair(node, pair.getLine().substring(1));
     }
 
-    private ParsePair parseMethodExpr(String line) {
+    private ParsePair parseMethodExpr(String line, boolean parseTypes) {
         line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr caller = pair.getNode();
@@ -311,12 +346,21 @@ public class Parser {
         String temp = parts[1].substring(1);
 
         while (!temp.isEmpty() && temp.charAt(0) != ')' && pair.getLine().charAt(0) != ')') {
-            pair = parseExpr(temp);
-            method.addArg(pair.getNode());
-            if (pair.getLine().length() < 2) {
-                break;
+            if (parseTypes) {
+                pair = parseTypedVarExpr(temp);
+                method.addArg((TypedVarExpr) pair.getNode());
+                if (pair.getLine().length() < 2) {
+                    break;
+                }
+                temp = pair.getLine().substring(1);
+            } else {
+                pair = parseExpr(temp);
+                method.addArg(pair.getNode());
+                if (pair.getLine().length() < 2) {
+                    break;
+                }
+                temp = pair.getLine().substring(1);
             }
-            temp = pair.getLine().substring(1);
         }
 
         return new ParsePair(method, temp);
@@ -336,5 +380,14 @@ public class Parser {
         String[] parts = parseVar(line);
         ASTExpr node = new ClassExpr(parts[0]);
         return new ParsePair(node, parts[1]);
+    }
+
+    private ParsePair parseTypedVarExpr(String line) {
+        line = line.stripLeading();
+        String[] parts = parseVar(line);
+        String var = parts[0];
+        parts = parseVar(parts[1].substring(1));
+        String type = parts[0];
+        return new ParsePair(new TypedVarExpr(var, type), parts[1]);
     }
 }

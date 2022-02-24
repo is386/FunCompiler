@@ -1,14 +1,53 @@
 package cfg;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Stack;
 
 import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.*;
-import ast.stmt.*;
-import cfg.primitives.*;
-import cfg.stmt.*;
+import ast.expr.ASTExpr;
+import ast.expr.ArithExpr;
+import ast.expr.ClassExpr;
+import ast.expr.FieldExpr;
+import ast.expr.IntExpr;
+import ast.expr.MethodExpr;
+import ast.expr.NullExpr;
+import ast.expr.ThisExpr;
+import ast.expr.TypedVarExpr;
+import ast.expr.VarExpr;
+import ast.stmt.ASTStmt;
+import ast.stmt.AssignStmt;
+import ast.stmt.IfStmt;
+import ast.stmt.PrintStmt;
+import ast.stmt.ReturnStmt;
+import ast.stmt.UpdateStmt;
+import ast.stmt.WhileStmt;
+import cfg.primitives.AllocPrimitive;
+import cfg.primitives.ArithPrimitive;
+import cfg.primitives.CallPrimitive;
+import cfg.primitives.GetEltPrimitive;
+import cfg.primitives.GlobalPrimitive;
+import cfg.primitives.IntPrimitive;
+import cfg.primitives.LoadPrimitive;
+import cfg.primitives.Primitive;
+import cfg.primitives.PrintPrimitive;
+import cfg.primitives.SetEltPrimitive;
+import cfg.primitives.StorePrimitive;
+import cfg.primitives.TempPrimitive;
+import cfg.primitives.ThisPrimitive;
+import cfg.primitives.VarPrimitive;
+import cfg.stmt.ControlCond;
+import cfg.stmt.ControlJump;
+import cfg.stmt.ControlReturn;
+import cfg.stmt.ControlStmt;
+import cfg.stmt.IRData;
+import cfg.stmt.IREqual;
+import cfg.stmt.IRFail;
+import cfg.stmt.IRStmt;
 import visitor.ASTVisitor;
 
 public class CFGBuilder implements ASTVisitor {
@@ -48,7 +87,9 @@ public class CFGBuilder implements ASTVisitor {
 
         for (ClassDecl c : node.getClasses()) {
             fieldCounts.put(c.getName(), c.getFields().size());
-            uniqueNames.addAll(c.getFields());
+            for (TypedVarExpr tv : c.getFields()) {
+                uniqueNames.add(tv.getName());
+            }
             methods.addAll(c.getMethods());
         }
         fields = new ArrayList<>(uniqueNames);
@@ -70,9 +111,9 @@ public class CFGBuilder implements ASTVisitor {
         BasicBlock mainBlock = new BasicBlock("main", 0);
         mainBlock.setAsHead();
 
-        for (String v : node.getLocalVars()) {
-            cfg.addVar(v);
-            VarPrimitive vp = new VarPrimitive(v);
+        for (TypedVarExpr v : node.getLocalVars()) {
+            cfg.addVar(v.getName());
+            VarPrimitive vp = new VarPrimitive(v.getName());
             IREqual ir = new IREqual(vp, new IntPrimitive(0, true));
             mainBlock.push(ir);
         }
@@ -676,7 +717,14 @@ public class CFGBuilder implements ASTVisitor {
         int offset = 2;
         ArrayList<Object> fieldMap = new ArrayList<>();
         for (String f : fields) {
-            if (node.getFields().contains(f)) {
+            boolean add = false;
+            for (TypedVarExpr field : node.getFields()) {
+                if (field.getName().equals(f)) {
+                    add = true;
+                    break;
+                }
+            }
+            if (add) {
                 fieldMap.add(offset++);
             } else {
                 fieldMap.add(0);
@@ -702,12 +750,15 @@ public class CFGBuilder implements ASTVisitor {
     @Override
     public void visit(MethodDecl node) {
         BasicBlock methodBlock = new BasicBlock(node.getBlockName(), 0);
-        methodBlock.setParams(node.getArgs());
+
+        for (TypedVarExpr t : node.getArgs()) {
+            methodBlock.addParam(t.getName());
+        }
         methodBlock.setAsHead();
 
-        for (String v : node.getLocalVars()) {
-            cfg.addVar(v);
-            VarPrimitive vp = new VarPrimitive(v);
+        for (TypedVarExpr v : node.getLocalVars()) {
+            cfg.addVar(v.getName());
+            VarPrimitive vp = new VarPrimitive(v.getName());
             IREqual ir = new IREqual(vp, new IntPrimitive(0, true));
             methodBlock.push(ir);
         }
@@ -789,5 +840,11 @@ public class CFGBuilder implements ASTVisitor {
         for (BasicBlock b : unreachable) {
             cfg.getBlocks().remove(b);
         }
+    }
+
+    @Override
+    public void visit(NullExpr node) {
+        // TODO Auto-generated method stub
+
     }
 }

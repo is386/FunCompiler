@@ -6,21 +6,20 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.ASTNode;
+import ast.expr.TypedVarExpr;
 import cfg.CFGBuilder;
 
 public class ClassDecl extends ASTNode {
     private final String name;
-    private ArrayList<String> fields = new ArrayList<>();
+    private ArrayList<TypedVarExpr> fields = new ArrayList<>();
     private ArrayList<MethodDecl> methods = new ArrayList<>();
 
     public ClassDecl(String name) {
         this.name = name;
     }
 
-    public void addField(String f) {
-        if (!f.isEmpty()) {
-            fields.add(f);
-        }
+    public void addField(TypedVarExpr f) {
+        fields.add(f);
     }
 
     public void addMethod(MethodDecl m) {
@@ -30,7 +29,7 @@ public class ClassDecl extends ASTNode {
         }
     }
 
-    public ArrayList<String> getFields() {
+    public ArrayList<TypedVarExpr> getFields() {
         return fields;
     }
 
@@ -57,8 +56,8 @@ public class ClassDecl extends ASTNode {
                 .put("name", name);
 
         JSONArray jFields = new JSONArray();
-        for (String f : fields) {
-            jFields.put(f);
+        for (TypedVarExpr f : fields) {
+            jFields.put(new JSONObject(f.toString()));
         }
 
         JSONArray jMethods = new JSONArray();

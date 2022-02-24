@@ -8,22 +8,25 @@ import org.json.JSONObject;
 import ast.ASTNode;
 import ast.expr.ASTExpr;
 import ast.expr.MethodExpr;
+import ast.expr.TypedVarExpr;
 import ast.stmt.ASTStmt;
 import cfg.CFGBuilder;
 
 public class MethodDecl extends ASTNode {
     private final String name;
+    private final String returnType;
     private String className;
-    private ArrayList<String> localVars = new ArrayList<>();
-    private ArrayList<String> args = new ArrayList<>();
+    private ArrayList<TypedVarExpr> localVars = new ArrayList<>();
+    private ArrayList<TypedVarExpr> args = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
 
-    public MethodDecl(MethodExpr methodExpr) {
+    public MethodDecl(MethodExpr methodExpr, String className, String returnType) {
         this.name = methodExpr.getName();
-        this.args.add("this");
+        this.returnType = returnType;
+        this.args.add(new TypedVarExpr("this", className));
         for (ASTExpr e : methodExpr.getArgs()) {
             if (e != null) {
-                args.add(e.getName());
+                args.add((TypedVarExpr) e);
             }
         }
     }
@@ -32,10 +35,8 @@ public class MethodDecl extends ASTNode {
         return statements;
     }
 
-    public void addLocalVar(String lv) {
-        if (!lv.isEmpty()) {
-            localVars.add(lv);
-        }
+    public void addLocalVar(TypedVarExpr lv) {
+        localVars.add(lv);
     }
 
     public void addStatement(ASTStmt s) {
@@ -60,31 +61,28 @@ public class MethodDecl extends ASTNode {
         return name + className;
     }
 
-    public ArrayList<String> getLocalVars() {
+    public ArrayList<TypedVarExpr> getLocalVars() {
         return localVars;
     }
 
-    public ArrayList<String> getArgs() {
+    public ArrayList<TypedVarExpr> getArgs() {
         return args;
-    }
-
-    public ArrayList<String> localVars() {
-        return localVars;
     }
 
     public String toString() {
         JSONObject j = new JSONObject()
                 .put("node", this.getClass().getSimpleName())
-                .put("name", name);
+                .put("name", name)
+                .put("return", returnType);
 
         JSONArray jArgs = new JSONArray();
-        for (String a : args) {
-            jArgs.put(a);
+        for (TypedVarExpr a : args) {
+            jArgs.put(new JSONObject(a.toString()));
         }
 
         JSONArray jVars = new JSONArray();
-        for (String lv : localVars) {
-            jVars.put(lv);
+        for (TypedVarExpr lv : localVars) {
+            jVars.put(new JSONObject(lv.toString()));
         }
 
         JSONArray jStmts = new JSONArray();

@@ -94,8 +94,8 @@ public class BasicBlock {
         return params;
     }
 
-    public void setParams(ArrayList<String> params) {
-        this.params = params;
+    public void addParam(String p) {
+        this.params.add(p);
     }
 
     public void setAsHead() {

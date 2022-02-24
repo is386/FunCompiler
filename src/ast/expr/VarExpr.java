@@ -5,7 +5,7 @@ import org.json.JSONObject;
 import cfg.CFGBuilder;
 
 public class VarExpr extends ASTExpr {
-    private final String name;
+    protected final String name;
 
     public VarExpr(String name) {
         this.name = name;
@@ -16,6 +16,7 @@ public class VarExpr extends ASTExpr {
         return name;
     }
 
+    @Override
     public String toString() {
         return new JSONObject()
                 .put("node", this.getClass().getSimpleName())

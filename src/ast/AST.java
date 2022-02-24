@@ -6,25 +6,24 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.decl.ClassDecl;
+import ast.expr.TypedVarExpr;
 import ast.stmt.ASTStmt;
 import cfg.CFGBuilder;
 
 public class AST extends ASTNode {
-    private ArrayList<String> localVars = new ArrayList<>();
+    private ArrayList<TypedVarExpr> localVars = new ArrayList<>();
     private ArrayList<ASTStmt> statements = new ArrayList<>();
     private ArrayList<ClassDecl> classes = new ArrayList<>();
 
     public AST() {
     }
 
-    public ArrayList<String> getLocalVars() {
+    public ArrayList<TypedVarExpr> getLocalVars() {
         return localVars;
     }
 
-    public void addVar(String lv) {
-        if (!lv.isEmpty()) {
-            localVars.add(lv);
-        }
+    public void addVar(TypedVarExpr lv) {
+        localVars.add(lv);
     }
 
     public void addStatement(ASTStmt s) {
@@ -57,8 +56,8 @@ public class AST extends ASTNode {
         }
 
         JSONArray jVars = new JSONArray();
-        for (String lv : localVars) {
-            jVars.put(lv);
+        for (TypedVarExpr lv : localVars) {
+            jVars.put(new JSONObject(lv.toString()));
         }
 
         JSONArray jStmts = new JSONArray();
