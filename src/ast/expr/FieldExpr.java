@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class FieldExpr extends ASTExpr {
     private final ASTExpr caller;
@@ -29,7 +29,7 @@ public class FieldExpr extends ASTExpr {
                 .toString();
     }
 
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 }

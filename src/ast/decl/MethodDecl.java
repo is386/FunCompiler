@@ -6,11 +6,9 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ast.ASTNode;
-import ast.expr.ASTExpr;
-import ast.expr.MethodExpr;
-import ast.expr.TypedVarExpr;
+import ast.expr.*;
 import ast.stmt.ASTStmt;
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class MethodDecl extends ASTNode {
     private final String name;
@@ -29,6 +27,10 @@ public class MethodDecl extends ASTNode {
                 args.add((TypedVarExpr) e);
             }
         }
+    }
+
+    public String getReturnType() {
+        return returnType;
     }
 
     public ArrayList<ASTStmt> getStatements() {
@@ -97,7 +99,7 @@ public class MethodDecl extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 }

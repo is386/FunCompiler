@@ -10,6 +10,7 @@ import ast.expr.IntExpr;
 import ast.expr.MethodExpr;
 import ast.expr.NullExpr;
 import ast.expr.ThisExpr;
+import ast.expr.TypedVarExpr;
 import ast.expr.VarExpr;
 import ast.stmt.AssignStmt;
 import ast.stmt.IfStmt;
@@ -41,6 +42,8 @@ public interface ASTVisitor {
     public void visit(IntExpr node);
 
     public void visit(VarExpr node);
+
+    public void visit(TypedVarExpr node);
 
     public void visit(MethodExpr node);
 

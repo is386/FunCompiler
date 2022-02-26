@@ -2,6 +2,8 @@ package ast.expr;
 
 import org.json.JSONObject;
 
+import visitor.ASTVisitor;
+
 public class TypedVarExpr extends VarExpr {
     private final String type;
 
@@ -21,5 +23,10 @@ public class TypedVarExpr extends VarExpr {
                 .put("name", name)
                 .put("type", type)
                 .toString();
+    }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
     }
 }

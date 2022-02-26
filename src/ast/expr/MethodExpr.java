@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class MethodExpr extends ASTExpr {
     private final String name;
@@ -49,7 +49,7 @@ public class MethodExpr extends ASTExpr {
         return j.put("args", jArgs).toString();
     }
 
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 }

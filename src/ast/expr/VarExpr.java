@@ -2,7 +2,7 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class VarExpr extends ASTExpr {
     protected final String name;
@@ -24,7 +24,7 @@ public class VarExpr extends ASTExpr {
                 .toString();
     }
 
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 }

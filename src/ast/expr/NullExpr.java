@@ -2,13 +2,17 @@ package ast.expr;
 
 import org.json.JSONObject;
 
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class NullExpr extends ASTExpr {
     private final String type;
 
     public NullExpr(String type) {
         this.type = type;
+    }
+
+    public String getType() {
+        return type;
     }
 
     @Override
@@ -20,7 +24,7 @@ public class NullExpr extends ASTExpr {
     }
 
     @Override
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 

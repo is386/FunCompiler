@@ -2,12 +2,11 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 import ast.AST;
-import cfg.CFG;
-import cfg.CFGBuilder;
-import cfg.Dom;
+import cfg.*;
 import parse.Parser;
 import ssa.SSAOptimized;
 import ssa.SSAUnoptimized;
+import types.TypeChecker;
 import visitor.CFGVisitor;
 import vn.ValueNumbering;
 
@@ -56,6 +55,9 @@ public class Main {
 
         Parser parser = new Parser(source);
         AST ast = parser.parse();
+
+        TypeChecker typeChecker = new TypeChecker();
+        typeChecker.visit(ast);
 
         CFGBuilder cfgBuilder = new CFGBuilder(doOpt);
         CFG cfg = cfgBuilder.build(ast);

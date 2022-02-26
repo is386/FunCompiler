@@ -1,53 +1,14 @@
 package cfg;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Stack;
+import java.util.*;
 
 import ast.AST;
 import ast.decl.ClassDecl;
 import ast.decl.MethodDecl;
-import ast.expr.ASTExpr;
-import ast.expr.ArithExpr;
-import ast.expr.ClassExpr;
-import ast.expr.FieldExpr;
-import ast.expr.IntExpr;
-import ast.expr.MethodExpr;
-import ast.expr.NullExpr;
-import ast.expr.ThisExpr;
-import ast.expr.TypedVarExpr;
-import ast.expr.VarExpr;
-import ast.stmt.ASTStmt;
-import ast.stmt.AssignStmt;
-import ast.stmt.IfStmt;
-import ast.stmt.PrintStmt;
-import ast.stmt.ReturnStmt;
-import ast.stmt.UpdateStmt;
-import ast.stmt.WhileStmt;
-import cfg.primitives.AllocPrimitive;
-import cfg.primitives.ArithPrimitive;
-import cfg.primitives.CallPrimitive;
-import cfg.primitives.GetEltPrimitive;
-import cfg.primitives.GlobalPrimitive;
-import cfg.primitives.IntPrimitive;
-import cfg.primitives.LoadPrimitive;
-import cfg.primitives.Primitive;
-import cfg.primitives.PrintPrimitive;
-import cfg.primitives.SetEltPrimitive;
-import cfg.primitives.StorePrimitive;
-import cfg.primitives.TempPrimitive;
-import cfg.primitives.ThisPrimitive;
-import cfg.primitives.VarPrimitive;
-import cfg.stmt.ControlCond;
-import cfg.stmt.ControlJump;
-import cfg.stmt.ControlReturn;
-import cfg.stmt.ControlStmt;
-import cfg.stmt.IRData;
-import cfg.stmt.IREqual;
-import cfg.stmt.IRFail;
-import cfg.stmt.IRStmt;
+import ast.expr.*;
+import ast.stmt.*;
+import cfg.primitives.*;
+import cfg.stmt.*;
 import visitor.ASTVisitor;
 
 public class CFGBuilder implements ASTVisitor {
@@ -844,6 +805,12 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(NullExpr node) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void visit(TypedVarExpr node) {
         // TODO Auto-generated method stub
 
     }

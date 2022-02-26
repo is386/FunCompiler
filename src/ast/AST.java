@@ -8,7 +8,7 @@ import org.json.JSONObject;
 import ast.decl.ClassDecl;
 import ast.expr.TypedVarExpr;
 import ast.stmt.ASTStmt;
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class AST extends ASTNode {
     private ArrayList<TypedVarExpr> localVars = new ArrayList<>();
@@ -72,7 +72,7 @@ public class AST extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 }

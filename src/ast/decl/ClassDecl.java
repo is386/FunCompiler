@@ -7,7 +7,7 @@ import org.json.JSONObject;
 
 import ast.ASTNode;
 import ast.expr.TypedVarExpr;
-import cfg.CFGBuilder;
+import visitor.ASTVisitor;
 
 public class ClassDecl extends ASTNode {
     private final String name;
@@ -71,7 +71,7 @@ public class ClassDecl extends ASTNode {
                 .toString();
     }
 
-    public void accept(CFGBuilder visitor) {
+    public void accept(ASTVisitor visitor) {
         visitor.visit(this);
     }
 }
