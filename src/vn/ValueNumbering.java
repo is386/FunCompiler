@@ -191,7 +191,7 @@ public class ValueNumbering implements CFGVisitor {
         String op = arith.getOp();
 
         if (op.equals("-") && x.equals(y)) {
-            return new IntPrimitive(0, false);
+            return new IntPrimitive(0);
         }
 
         return arith;
@@ -212,7 +212,7 @@ public class ValueNumbering implements CFGVisitor {
     private Primitive addIdentity(ArithPrimitive arith) {
         Primitive x = arith.getOperand1();
         Primitive y = arith.getOperand2();
-        Primitive zero = new IntPrimitive(0, false);
+        Primitive zero = new IntPrimitive(0);
         String op = arith.getOp();
 
         if (op.equals("+") && (x.equals(zero))) {
@@ -303,7 +303,7 @@ public class ValueNumbering implements CFGVisitor {
         if (VN.containsKey(node.getCond())) {
             node.setCond(VN.get(node.getCond()));
         }
-        Primitive one = new IntPrimitive(1, false);
+        Primitive one = new IntPrimitive(1);
         if (node.getCond().equals(one)) {
             jumpTo = node.getIf();
             replaceCond = true;

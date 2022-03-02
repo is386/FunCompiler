@@ -1,6 +1,5 @@
 package cfg.primitives;
 
-import cfg.Type;
 import visitor.CFGVisitor;
 
 public class ArithPrimitive extends Primitive {
@@ -36,11 +35,6 @@ public class ArithPrimitive extends Primitive {
     @Override
     public String toString() {
         return String.format("%s %s %s", operand1, op, operand2);
-    }
-
-    @Override
-    public Type getType() {
-        return Type.INTEGER;
     }
 
     @Override

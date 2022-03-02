@@ -153,6 +153,7 @@ public class TypeChecker implements ASTVisitor {
             if (!exprType.equals("int")) {
                 showError("return type of 'main' must be integer");
             }
+            return;
         }
 
         String returnType = methodReturnTypes.get(currentClass).get(currentMethod);

@@ -10,18 +10,13 @@ import types.TypeChecker;
 import visitor.CFGVisitor;
 import vn.ValueNumbering;
 
-// TODO: Fix bugs found in crazy.441
-
 public class Main {
-    private static boolean doOpt = true;
     private static boolean oldSSA = false;
     private static boolean doVN = true;
 
     private static void parseArgs(String[] args) {
         for (int i = 0; i < args.length; i++) {
-            if (args[i].toLowerCase().equals("-noopt")) {
-                doOpt = false;
-            } else if (args[i].toLowerCase().equals("-oldssa")) {
+            if (args[i].toLowerCase().equals("-oldssa")) {
                 oldSSA = true;
             } else if (args[i].toLowerCase().equals("-novn")) {
                 doVN = false;
@@ -59,7 +54,7 @@ public class Main {
         TypeChecker typeChecker = new TypeChecker();
         typeChecker.visit(ast);
 
-        CFGBuilder cfgBuilder = new CFGBuilder(doOpt);
+        CFGBuilder cfgBuilder = new CFGBuilder();
         CFG cfg = cfgBuilder.build(ast);
         Dom.storeDominators(cfg);
 

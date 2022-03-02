@@ -13,8 +13,6 @@ import visitor.ASTVisitor;
 
 public class CFGBuilder implements ASTVisitor {
     private int blockCount = 1;
-    private boolean badPtr = false;
-    private boolean badNumber = false;
     private boolean badField = false;
     private boolean badMethod = false;
     private CFG cfg = new CFG();
@@ -25,12 +23,6 @@ public class CFGBuilder implements ASTVisitor {
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
     private Primitive assignedVar = null;
-    private IntPrimitive addMask = new IntPrimitive("18446744073709551614");
-    private boolean thisOpt;
-
-    public CFGBuilder(boolean thisOpt) {
-        this.thisOpt = thisOpt;
-    }
 
     public CFG build(AST ast) {
         visit(ast);
@@ -75,7 +67,7 @@ public class CFGBuilder implements ASTVisitor {
         for (TypedVarExpr v : node.getLocalVars()) {
             cfg.addVar(v.getName());
             VarPrimitive vp = new VarPrimitive(v.getName());
-            IREqual ir = new IREqual(vp, new IntPrimitive(0, true));
+            IREqual ir = new IREqual(vp, new IntPrimitive(0));
             mainBlock.push(ir);
         }
 
@@ -85,28 +77,13 @@ public class CFGBuilder implements ASTVisitor {
         }
 
         if (blocks.peek().getControlStmt() == null) {
-            blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
+            blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0)));
         }
         cfg.add(blocks.pop());
     }
 
     private void addFailBlocks() {
         BasicBlock fail;
-
-        if (badPtr) {
-            fail = new BasicBlock("badPtr", 0);
-            fail.push(new IRFail("NotAPointer"));
-            fail.setFail();
-            cfg.add(fail);
-        }
-
-        if (badNumber) {
-            fail = new BasicBlock("badNumber", 0);
-            fail.push(new IRFail("NotANumber"));
-            fail.setFail();
-            cfg.add(fail);
-        }
-
         if (badField) {
             fail = new BasicBlock("badField", 0);
             fail.push(new IRFail("NoSuchField"));
@@ -155,22 +132,7 @@ public class CFGBuilder implements ASTVisitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
         arith = new ArithPrimitive("+");
-        arith.setOperand2(new IntPrimitive(8, false));
-
-        if (caller.getType() == Type.UNDECLARED) {
-            ArithPrimitive and = new ArithPrimitive("&");
-            and.setOperand1(caller);
-            and.setOperand2(new IntPrimitive(1, false));
-            tempVar = cfg.getNextTemp();
-            ir = new IREqual(tempVar, and);
-            blocks.peek().push(ir);
-            ifBranchName = "l" + blockCount++;
-            c = new ControlCond(tempVar, "badPtr", ifBranchName);
-            badPtr = true;
-            blocks.peek().setControlStmt(c);
-            cfg.add(blocks.pop());
-            blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
-        }
+        arith.setOperand2(new IntPrimitive(8));
         arith.setOperand1(caller);
 
         tempVar = cfg.getNextTemp();
@@ -184,7 +146,7 @@ public class CFGBuilder implements ASTVisitor {
 
         int offset = fields.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
-        IntPrimitive offsetPrim = new IntPrimitive(offset, false);
+        IntPrimitive offsetPrim = new IntPrimitive(offset);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
@@ -206,25 +168,6 @@ public class CFGBuilder implements ASTVisitor {
     public void visit(IfStmt node) {
         node.getCond().accept(this);
         Primitive condVar = primitives.pop();
-        if (condVar.getType() == Type.UNDECLARED) {
-            checkIfNumber(condVar);
-            ArithPrimitive arith = new ArithPrimitive("/");
-            TempPrimitive tempVar = cfg.getNextTemp();
-            arith.setOperand1(condVar);
-            arith.setOperand2(new IntPrimitive(2, false));
-            IREqual ir = new IREqual(tempVar, arith);
-            blocks.peek().push(ir);
-            condVar = tempVar;
-        } else if (condVar.getType() == Type.INTEGER) {
-            ArithPrimitive arith = new ArithPrimitive("/");
-            TempPrimitive tempVar = cfg.getNextTemp();
-            arith.setOperand1(condVar);
-            arith.setOperand2(new IntPrimitive(2, false));
-            IREqual ir = new IREqual(tempVar, arith);
-            blocks.peek().push(ir);
-            condVar = tempVar;
-        }
-
         int ifBlockNum = blockCount++;
         int elseBlockNum = blockCount++;
         int jumpBlockNum = blockCount;
@@ -280,39 +223,9 @@ public class CFGBuilder implements ASTVisitor {
         BasicBlock loopHead = new BasicBlock(loopName, blockCount - 1);
         ControlStmt c;
 
-        if (condVar.getType() == Type.UNDECLARED) {
-            c = new ControlJump(loopName);
-            blocks.peek().setControlStmt(c);
-
-            BasicBlock b = new BasicBlock(loopName, blockCount - 1);
-            loopName = "l" + blockCount++;
-            loopHead = new BasicBlock(loopName, blockCount - 1);
-            ArithPrimitive arith = new ArithPrimitive("&");
-            arith.setOperand1(condVar);
-            arith.setOperand2(new IntPrimitive(1, false));
-            Primitive tempVar = cfg.getNextTemp();
-            IREqual ir = new IREqual(tempVar, arith);
-            primitives.push(tempVar);
-            b.push(ir);
-            jumpBack = b.getName();
-            c = new ControlCond(tempVar, loopName, "badNumber");
-            badNumber = true;
-            b.setControlStmt(c);
-            cfg.add(blocks.pop());
-            blocks.push(b);
-
-            arith = new ArithPrimitive("/");
-            tempVar = cfg.getNextTemp();
-            arith.setOperand1(condVar);
-            arith.setOperand2(new IntPrimitive(2, false));
-            ir = new IREqual(tempVar, arith);
-            loopHead.push(ir);
-            condVar = tempVar;
-        } else {
-            c = new ControlJump(loopName);
-            blocks.peek().setControlStmt(c);
-            jumpBack = loopName;
-        }
+        c = new ControlJump(loopName);
+        blocks.peek().setControlStmt(c);
+        jumpBack = loopName;
         cfg.add(blocks.pop());
 
         int bodyNum = blockCount++;
@@ -340,18 +253,8 @@ public class CFGBuilder implements ASTVisitor {
     public void visit(PrintStmt node) {
         node.getExpr().accept(this);
         Primitive varToPrint = primitives.pop();
-        if (varToPrint.getType() == Type.UNDECLARED) {
-            checkIfNumber(varToPrint);
-        }
-        ArithPrimitive arith = new ArithPrimitive("/");
-        TempPrimitive tempVar = cfg.getNextTemp();
-        arith.setOperand1(varToPrint);
-        arith.setOperand2(new IntPrimitive(2, false));
-        IREqual ir = new IREqual(tempVar, arith);
-        blocks.peek().push(ir);
-        varToPrint = tempVar;
         PrintPrimitive p = new PrintPrimitive(varToPrint);
-        ir = new IREqual(null, p);
+        IREqual ir = new IREqual(null, p);
         blocks.peek().push(ir);
     }
 
@@ -377,21 +280,6 @@ public class CFGBuilder implements ASTVisitor {
 
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
-
-        if (caller.getType() == Type.UNDECLARED) {
-            ArithPrimitive arith = new ArithPrimitive("&");
-            arith.setOperand1(caller);
-            arith.setOperand2(new IntPrimitive(1, false));
-            tempVar = cfg.getNextTemp();
-            ir = new IREqual(tempVar, arith);
-            blocks.peek().push(ir);
-            ifBranchName = "l" + blockCount++;
-            c = new ControlCond(tempVar, "badPtr", ifBranchName);
-            badPtr = true;
-            blocks.peek().setControlStmt(c);
-            cfg.add(blocks.pop());
-            blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
-        }
         LoadPrimitive load = new LoadPrimitive(caller);
 
         tempVar = cfg.getNextTemp();
@@ -400,7 +288,7 @@ public class CFGBuilder implements ASTVisitor {
 
         int offset = methodNames.indexOf(node.getName());
         offset = (offset == -1) ? 0 : offset;
-        IntPrimitive offsetPrim = new IntPrimitive(offset, false);
+        IntPrimitive offsetPrim = new IntPrimitive(offset);
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
@@ -449,24 +337,9 @@ public class CFGBuilder implements ASTVisitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
 
-        if (caller.getType() == Type.UNDECLARED) {
-            arith = new ArithPrimitive("&");
-            arith.setOperand1(caller);
-            arith.setOperand2(new IntPrimitive(1, false));
-            tempVar = cfg.getNextTemp();
-            ir = new IREqual(tempVar, arith);
-            blocks.peek().push(ir);
-            ifBranchName = "l" + blockCount++;
-            c = new ControlCond(tempVar, "badPtr", ifBranchName);
-            badPtr = true;
-            blocks.peek().setControlStmt(c);
-            cfg.add(blocks.pop());
-            blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
-        }
-
         arith = new ArithPrimitive("+");
         arith.setOperand1(caller);
-        arith.setOperand2(new IntPrimitive(8, false));
+        arith.setOperand2(new IntPrimitive(8));
 
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -477,7 +350,7 @@ public class CFGBuilder implements ASTVisitor {
         ir = new IREqual(tempVar, load);
         blocks.peek().push(ir);
 
-        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()), false);
+        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
         GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
@@ -526,7 +399,7 @@ public class CFGBuilder implements ASTVisitor {
 
         ArithPrimitive arith = new ArithPrimitive("+");
         arith.setOperand1(returnVar);
-        arith.setOperand2(new IntPrimitive(8, false));
+        arith.setOperand2(new IntPrimitive(8));
 
         TempPrimitive tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
@@ -552,110 +425,12 @@ public class CFGBuilder implements ASTVisitor {
 
         node.getExpr1().accept(this);
         Primitive operand1 = primitives.pop();
-        if (operand1.getType() == Type.UNDECLARED) {
-            checkIfNumber(operand1);
-        }
+
         node.getExpr2().accept(this);
         Primitive operand2 = primitives.pop();
-        if (operand2.getType() == Type.UNDECLARED) {
-            checkIfNumber(operand2);
-        }
 
         arith.setOperand1(operand1);
         arith.setOperand2(operand2);
-
-        Primitive tempVar;
-        Primitive tempVar2;
-        ArithPrimitive arith2;
-        IRStmt ir;
-        switch (node.getOp()) {
-            case "+":
-                tempVar = cfg.getNextTemp();
-                arith2 = new ArithPrimitive("&");
-                arith2.setOperand1(operand1);
-                arith2.setOperand2(addMask);
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-                arith.setOperand1(tempVar);
-                break;
-            case "-":
-                tempVar = cfg.getNextTemp();
-                ir = new IREqual(tempVar, arith);
-                blocks.peek().push(ir);
-                arith2 = new ArithPrimitive("+");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(new IntPrimitive(1, false));
-                returnVal = arith2;
-                break;
-            case "*":
-                tempVar = cfg.getNextTemp();
-                arith2 = new ArithPrimitive("/");
-                arith2.setOperand1(operand1);
-                arith2.setOperand2(new IntPrimitive(2, false));
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-
-                tempVar2 = cfg.getNextTemp();
-                arith2 = new ArithPrimitive("/");
-                arith2.setOperand1(operand2);
-                arith2.setOperand2(new IntPrimitive(2, false));
-                ir = new IREqual(tempVar2, arith2);
-                blocks.peek().push(ir);
-
-                arith2 = new ArithPrimitive("*");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(tempVar2);
-                tempVar = cfg.getNextTemp();
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-
-                arith2 = new ArithPrimitive("*");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(new IntPrimitive(2, false));
-                tempVar = cfg.getNextTemp();
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-
-                arith2 = new ArithPrimitive("+");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(new IntPrimitive(1, false));
-                returnVal = arith2;
-                break;
-            case "/":
-                tempVar = cfg.getNextTemp();
-                arith2 = new ArithPrimitive("/");
-                arith2.setOperand1(operand1);
-                arith2.setOperand2(new IntPrimitive(2, false));
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-
-                tempVar2 = cfg.getNextTemp();
-                arith2 = new ArithPrimitive("/");
-                arith2.setOperand1(operand2);
-                arith2.setOperand2(new IntPrimitive(2, false));
-                ir = new IREqual(tempVar2, arith2);
-                blocks.peek().push(ir);
-
-                arith2 = new ArithPrimitive("/");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(tempVar2);
-                tempVar = cfg.getNextTemp();
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-
-                arith2 = new ArithPrimitive("*");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(new IntPrimitive(2, false));
-                tempVar = cfg.getNextTemp();
-                ir = new IREqual(tempVar, arith2);
-                blocks.peek().push(ir);
-
-                arith2 = new ArithPrimitive("+");
-                arith2.setOperand1(tempVar);
-                arith2.setOperand2(new IntPrimitive(1, false));
-                returnVal = arith2;
-                break;
-        }
 
         if (returnVal == null) {
             returnVal = arith;
@@ -668,7 +443,7 @@ public class CFGBuilder implements ASTVisitor {
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
-        ir = new IREqual(returnVar, returnVal);
+        IREqual ir = new IREqual(returnVar, returnVal);
         blocks.peek().push(ir);
         primitives.push(returnVar);
     }
@@ -720,7 +495,7 @@ public class CFGBuilder implements ASTVisitor {
         for (TypedVarExpr v : node.getLocalVars()) {
             cfg.addVar(v.getName());
             VarPrimitive vp = new VarPrimitive(v.getName());
-            IREqual ir = new IREqual(vp, new IntPrimitive(0, true));
+            IREqual ir = new IREqual(vp, new IntPrimitive(0));
             methodBlock.push(ir);
         }
         blocks.push(methodBlock);
@@ -730,7 +505,7 @@ public class CFGBuilder implements ASTVisitor {
         }
 
         if (blocks.peek().getControlStmt() == null) {
-            blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0, false)));
+            blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0)));
         }
 
         cfg.add(blocks.pop());
@@ -742,7 +517,7 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(IntExpr node) {
-        primitives.push(new IntPrimitive(node.getValue(), true));
+        primitives.push(new IntPrimitive(node.getValue()));
     }
 
     @Override
@@ -754,25 +529,7 @@ public class CFGBuilder implements ASTVisitor {
     @Override
     public void visit(ThisExpr node) {
         ThisPrimitive t = new ThisPrimitive();
-        if (thisOpt) {
-            t.setType(Type.THIS);
-        }
         primitives.push(t);
-    }
-
-    private void checkIfNumber(Primitive prim) {
-        ArithPrimitive arith = new ArithPrimitive("&");
-        arith.setOperand1(prim);
-        arith.setOperand2(new IntPrimitive(1, false));
-        Primitive tempVar = cfg.getNextTemp();
-        IREqual ir = new IREqual(tempVar, arith);
-        blocks.peek().push(ir);
-        String ifBranchName = "l" + blockCount++;
-        ControlStmt c = new ControlCond(tempVar, ifBranchName, "badNumber");
-        badNumber = true;
-        blocks.peek().setControlStmt(c);
-        cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
     }
 
     private void connectBlocks() {

@@ -1,11 +1,9 @@
 package cfg.primitives;
 
-import cfg.Type;
 import visitor.CFGVisitor;
 
 public class VarPrimitive extends Primitive {
     protected String name;
-    private Type type = Type.UNDECLARED;
     private int version = 0;
 
     public VarPrimitive(String name) {
@@ -14,15 +12,6 @@ public class VarPrimitive extends Primitive {
 
     public String toString() {
         return "%" + name + version;
-    }
-
-    @Override
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type t) {
-        type = t;
     }
 
     @Override

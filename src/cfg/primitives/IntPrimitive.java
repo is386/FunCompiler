@@ -1,23 +1,12 @@
 package cfg.primitives;
 
-import cfg.Type;
 import visitor.CFGVisitor;
 
 public class IntPrimitive extends Primitive {
     private long value;
-    private String strValue;
 
-    public IntPrimitive(int value, boolean tagged) {
-        this.value = tagged ? (value << 1) + 1 : value;
-        this.strValue = Long.toString(this.value);
-    }
-
-    public IntPrimitive(String value) {
-        this.strValue = value;
-    }
-
-    public String toString() {
-        return strValue;
+    public IntPrimitive(int value) {
+        this.value = value;
     }
 
     public long getValue() {
@@ -26,12 +15,7 @@ public class IntPrimitive extends Primitive {
 
     @Override
     public String getName() {
-        return strValue;
-    }
-
-    @Override
-    public Type getType() {
-        return Type.INTEGER;
+        return Long.toString(this.value);
     }
 
     @Override
@@ -53,6 +37,11 @@ public class IntPrimitive extends Primitive {
             return false;
         }
         IntPrimitive i = (IntPrimitive) o;
-        return i.toString().equals(this.strValue);
+        return i.toString().equals(this.toString());
+    }
+
+    @Override
+    public String toString() {
+        return Long.toString(this.value);
     }
 }

@@ -36,7 +36,6 @@ public class SSAOptimized implements CFGVisitor {
                 if (!currentBlocks.contains(b.getName()) || b.isFail()) {
                     continue;
                 }
-
                 ArrayList<Primitive> vars = new ArrayList<>();
                 for (IRStmt ir : b.getStatements()) {
                     if (ir instanceof IREqual) {
@@ -86,15 +85,6 @@ public class SSAOptimized implements CFGVisitor {
             b.accept(this);
 
             for (String v : varCount.keySet()) {
-                if (lVersionMap.get(b.getName()).containsKey(v)) {
-                    continue;
-                }
-                if (b.getiDom() != null) {
-                    Integer val = lVersionMap.get(b.getiDom().getName()).get(v);
-                    lVersionMap.get(b.getName()).put(v, val);
-                } else if (b.getParents().size() == 0) {
-                    lVersionMap.get(b.getName()).put(v, 0);
-                }
                 if (rVersionMap.get(b.getName()).containsKey(v)) {
                     continue;
                 }
@@ -103,6 +93,15 @@ public class SSAOptimized implements CFGVisitor {
                     rVersionMap.get(b.getName()).put(v, val);
                 } else if (b.getParents().size() == 0) {
                     rVersionMap.get(b.getName()).put(v, 0);
+                }
+                if (lVersionMap.get(b.getName()).containsKey(v)) {
+                    continue;
+                }
+                if (b.getiDom() != null) {
+                    Integer val = lVersionMap.get(b.getiDom().getName()).get(v);
+                    lVersionMap.get(b.getName()).put(v, val);
+                } else if (b.getParents().size() == 0) {
+                    lVersionMap.get(b.getName()).put(v, 0);
                 }
             }
         }
@@ -131,29 +130,27 @@ public class SSAOptimized implements CFGVisitor {
             }
         }
 
-        if (!hasPhiBlocks) {
-            return;
-        }
-
-        for (String v : phiBlocks.keySet()) {
-            for (BasicBlock b : phiBlocks.get(v)) {
-                if (!lVersionMap.containsKey(b.getName())) {
-                    continue;
-                }
-                PhiPrimitive phiNode = new PhiPrimitive();
-                LinkedHashMap<String, Primitive> phiMap = new LinkedHashMap<>();
-                for (BasicBlock par : b.getParents()) {
+        if (hasPhiBlocks) {
+            for (String v : phiBlocks.keySet()) {
+                for (BasicBlock b : phiBlocks.get(v)) {
+                    if (!lVersionMap.containsKey(b.getName())) {
+                        continue;
+                    }
+                    PhiPrimitive phiNode = new PhiPrimitive();
+                    LinkedHashMap<String, Primitive> phiMap = new LinkedHashMap<>();
+                    for (BasicBlock par : b.getParents()) {
+                        VarPrimitive var = new VarPrimitive(v);
+                        Integer val = lVersionMap.get(par.getName()).get(v);
+                        var.setVersion(val);
+                        phiMap.put(par.getName(), var);
+                    }
+                    phiNode.setVarMap(phiMap);
                     VarPrimitive var = new VarPrimitive(v);
-                    Integer val = lVersionMap.get(par.getName()).get(v);
+                    Integer val = rVersionMap.get(b.getName()).get(v);
                     var.setVersion(val);
-                    phiMap.put(par.getName(), var);
+                    IREqual ir = new IREqual(var, phiNode);
+                    b.addPhiNode(ir);
                 }
-                phiNode.setVarMap(phiMap);
-                VarPrimitive var = new VarPrimitive(v);
-                Integer val = rVersionMap.get(b.getName()).get(v);
-                var.setVersion(val);
-                IREqual ir = new IREqual(var, phiNode);
-                b.addPhiNode(ir);
             }
         }
 

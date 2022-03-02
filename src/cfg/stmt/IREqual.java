@@ -10,9 +10,6 @@ public class IREqual extends IRStmt {
     public IREqual(Primitive var, Primitive primitive) {
         this.var = var;
         this.primitive = primitive;
-        if (var != null) {
-            var.setType(primitive.getType());
-        }
     }
 
     public Primitive getPrimitive() {
