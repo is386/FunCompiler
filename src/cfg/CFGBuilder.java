@@ -12,20 +12,27 @@ import cfg.stmt.*;
 import visitor.ASTVisitor;
 
 public class CFGBuilder implements ASTVisitor {
+    private String currClass = "";
+    private String currMethod = "";
     private int blockCount = 1;
-    private boolean badField = false;
     private CFG cfg = new CFG();
     private Stack<BasicBlock> blocks = new Stack<>();
     private Stack<Primitive> primitives = new Stack<>();
-    private ArrayList<String> fields;
     private ArrayList<String> methodNames;
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
+    private HashMap<String, HashMap<String, Integer>> fieldOffsets = new HashMap<>();
+    HashMap<String, HashMap<String, HashMap<String, String>>> methodVarTypes = new HashMap<>();
     private Primitive assignedVar = null;
+
+    public CFGBuilder(HashMap<String, HashMap<String, Integer>> fieldOffsets,
+            HashMap<String, HashMap<String, HashMap<String, String>>> methodVarTypes) {
+        this.fieldOffsets = fieldOffsets;
+        this.methodVarTypes = methodVarTypes;
+    }
 
     public CFG build(AST ast) {
         visit(ast);
-        addFailBlocks();
         connectBlocks();
         cfg.resetVars();
         cfg.resetFuncBlocks();
@@ -44,7 +51,6 @@ public class CFGBuilder implements ASTVisitor {
             }
             methods.addAll(c.getMethods());
         }
-        fields = new ArrayList<>(uniqueNames);
         uniqueNames.clear();
 
         for (MethodDecl m : methods) {
@@ -57,9 +63,13 @@ public class CFGBuilder implements ASTVisitor {
         }
 
         for (MethodDecl m : methods) {
+            currMethod = m.getName();
+            currClass = m.getClassName();
             m.accept(this);
         }
 
+        currMethod = "main";
+        currClass = "main";
         BasicBlock mainBlock = new BasicBlock("main", 0);
         mainBlock.setAsHead();
 
@@ -79,16 +89,6 @@ public class CFGBuilder implements ASTVisitor {
             blocks.peek().setControlStmt(new ControlReturn(new IntPrimitive(0)));
         }
         cfg.add(blocks.pop());
-    }
-
-    private void addFailBlocks() {
-        BasicBlock fail;
-        if (badField) {
-            fail = new BasicBlock("badField", 0);
-            fail.push(new IRFail("NoSuchField"));
-            fail.setFail();
-            cfg.add(fail);
-        }
     }
 
     @Override
@@ -116,42 +116,22 @@ public class CFGBuilder implements ASTVisitor {
         ArithPrimitive arith;
         TempPrimitive tempVar;
         IRStmt ir;
-        String ifBranchName;
-        ControlStmt c;
 
         node.getNewVal().accept(this);
         Primitive newVal = primitives.pop();
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
-        arith = new ArithPrimitive("+");
-        arith.setOperand2(new IntPrimitive(8));
-        arith.setOperand1(caller);
 
+        String type = methodVarTypes.get(currClass).get(currMethod).get(caller.getName());
+        int offset = fieldOffsets.get(type).get(node.getName());
+        arith = new ArithPrimitive("+");
+        arith.setOperand2(new IntPrimitive(8 * offset));
+        arith.setOperand1(caller);
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, arith);
         blocks.peek().push(ir);
 
-        LoadPrimitive load = new LoadPrimitive(tempVar);
-        tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, load);
-        blocks.peek().push(ir);
-
-        int offset = fields.indexOf(node.getName());
-        offset = (offset == -1) ? 0 : offset;
-        IntPrimitive offsetPrim = new IntPrimitive(offset);
-        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offsetPrim);
-        tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, getElt);
-        blocks.peek().push(ir);
-
-        ifBranchName = "l" + blockCount++;
-        c = new ControlCond(tempVar, ifBranchName, "badField");
-        blocks.peek().setControlStmt(c);
-        cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
-        badField = true;
-
-        SetEltPrimitive setElt = new SetEltPrimitive(caller, tempVar, newVal);
+        SetEltPrimitive setElt = new SetEltPrimitive(tempVar, new IntPrimitive(0), newVal);
         ir = new IREqual(null, setElt);
         blocks.peek().push(ir);
     }
@@ -262,8 +242,6 @@ public class CFGBuilder implements ASTVisitor {
         Primitive returnVar = null;
         TempPrimitive tempVar;
         IREqual ir;
-        String ifBranchName;
-        ControlStmt c;
 
         if (assignedVar != null) {
             returnVar = assignedVar;
@@ -308,11 +286,7 @@ public class CFGBuilder implements ASTVisitor {
     @Override
     public void visit(FieldExpr node) {
         Primitive returnVar = null;
-        ArithPrimitive arith;
-        TempPrimitive tempVar;
         IRStmt ir;
-        String ifBranchName;
-        ControlStmt c;
 
         if (assignedVar != null) {
             returnVar = assignedVar;
@@ -322,32 +296,6 @@ public class CFGBuilder implements ASTVisitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
 
-        arith = new ArithPrimitive("+");
-        arith.setOperand1(caller);
-        arith.setOperand2(new IntPrimitive(8));
-
-        tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, arith);
-        blocks.peek().push(ir);
-
-        LoadPrimitive load = new LoadPrimitive(tempVar);
-        tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, load);
-        blocks.peek().push(ir);
-
-        IntPrimitive offset = new IntPrimitive(fields.indexOf(node.getName()));
-        GetEltPrimitive getElt = new GetEltPrimitive(tempVar, offset);
-        tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, getElt);
-        blocks.peek().push(ir);
-
-        ifBranchName = "l" + blockCount++;
-        c = new ControlCond(tempVar, ifBranchName, "badField");
-        blocks.peek().setControlStmt(c);
-        cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
-        badField = true;
-
         if (returnVar == null && primitives.size() == 0) {
             returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
@@ -355,17 +303,19 @@ public class CFGBuilder implements ASTVisitor {
         } else if (returnVar == null && primitives.size() != 0) {
             returnVar = primitives.pop();
         }
-        getElt = new GetEltPrimitive(caller, tempVar);
+
+        String type = methodVarTypes.get(currClass).get(currMethod).get(caller.getName());
+        int offset = fieldOffsets.get(type).get(node.getName());
+        GetEltPrimitive getElt = new GetEltPrimitive(caller, new IntPrimitive(offset));
         ir = new IREqual(returnVar, getElt);
         blocks.peek().push(ir);
-
         primitives.push(returnVar);
     }
 
     @Override
     public void visit(ClassExpr node) {
         int allocSpace = fieldCounts.get(node.getName());
-        AllocPrimitive alloc = new AllocPrimitive(allocSpace + 2);
+        AllocPrimitive alloc = new AllocPrimitive(allocSpace + 1);
 
         Primitive returnVar = null;
         if (assignedVar != null) {
@@ -382,18 +332,6 @@ public class CFGBuilder implements ASTVisitor {
         ir = new IREqual(null, store);
         blocks.peek().push(ir);
 
-        ArithPrimitive arith = new ArithPrimitive("+");
-        arith.setOperand1(returnVar);
-        arith.setOperand2(new IntPrimitive(8));
-
-        TempPrimitive tempVar = cfg.getNextTemp();
-        ir = new IREqual(tempVar, arith);
-        blocks.peek().push(ir);
-
-        global = new GlobalPrimitive("fields" + node.getName());
-        store = new StorePrimitive(tempVar, global);
-        ir = new IREqual(null, store);
-        blocks.peek().push(ir);
         primitives.push(returnVar);
     }
 
@@ -435,23 +373,6 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(ClassDecl node) {
-        int offset = 2;
-        ArrayList<Object> fieldMap = new ArrayList<>();
-        for (String f : fields) {
-            boolean add = false;
-            for (TypedVarExpr field : node.getFields()) {
-                if (field.getName().equals(f)) {
-                    add = true;
-                    break;
-                }
-            }
-            if (add) {
-                fieldMap.add(offset++);
-            } else {
-                fieldMap.add(0);
-            }
-        }
-
         ArrayList<Object> vtable = new ArrayList<>();
         for (String m : methodNames) {
             MethodDecl methodDecl = node.getMethodByName(m);
@@ -463,9 +384,7 @@ public class CFGBuilder implements ASTVisitor {
         }
 
         IRData irVtable = new IRData("vtbl" + node.getName(), vtable);
-        IRData irFields = new IRData("fields" + node.getName(), fieldMap);
         cfg.addToDataBlock(irVtable);
-        cfg.addToDataBlock(irFields);
     }
 
     @Override

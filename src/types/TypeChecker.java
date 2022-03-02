@@ -16,10 +16,20 @@ public class TypeChecker implements ASTVisitor {
     private HashMap<String, HashMap<String, String>> methodReturnTypes = new HashMap<>();
     private HashMap<String, HashMap<String, ArrayList<String>>> methodArgTypes = new HashMap<>();
     private HashMap<String, HashMap<String, String>> fieldTypes = new HashMap<>();
+    private HashMap<String, HashMap<String, Integer>> fieldOffsets = new HashMap<>();
+    private HashMap<String, HashMap<String, HashMap<String, String>>> methodVarTypes = new HashMap<>();
     private HashMap<String, String> varTypes = new HashMap<>();
     private Stack<String> typeStack = new Stack<>();
     private String currentClass = "";
     private String currentMethod = "";
+
+    public HashMap<String, HashMap<String, Integer>> getFieldOffsets() {
+        return fieldOffsets;
+    }
+
+    public HashMap<String, HashMap<String, HashMap<String, String>>> getMethodVarTypes() {
+        return methodVarTypes;
+    }
 
     @Override
     public void visit(AST node) {
@@ -43,6 +53,8 @@ public class TypeChecker implements ASTVisitor {
 
         currentClass = "";
         currentMethod = "main";
+        varTypes = new HashMap<>();
+
         for (TypedVarExpr lv : node.getLocalVars()) {
             lv.accept(this);
         }
@@ -50,15 +62,21 @@ public class TypeChecker implements ASTVisitor {
         for (ASTStmt as : node.getStatements()) {
             as.accept(this);
         }
+        methodVarTypes.put("main", new HashMap<>());
+        methodVarTypes.get("main").put("main", varTypes);
     }
 
     private void generateTypeEnv(ClassDecl node) {
         fieldTypes.put(node.getName(), new HashMap<>());
+        fieldOffsets.put(node.getName(), new HashMap<>());
+        int offset = 1;
+
         for (TypedVarExpr f : node.getFields()) {
             if (!types.contains(f.getType())) {
                 nonExistentTypeError(f.getType());
             }
             fieldTypes.get(node.getName()).put(f.getName(), f.getType());
+            fieldOffsets.get(node.getName()).put(f.getName(), offset++);
         }
 
         methodReturnTypes.put(node.getName(), new HashMap<>());
@@ -84,6 +102,7 @@ public class TypeChecker implements ASTVisitor {
 
     @Override
     public void visit(ClassDecl node) {
+        methodVarTypes.put(node.getName(), new HashMap<>());
         for (MethodDecl m : node.getMethods()) {
             varTypes = new HashMap<>();
             m.accept(this);
@@ -102,6 +121,7 @@ public class TypeChecker implements ASTVisitor {
         for (ASTStmt as : node.getStatements()) {
             as.accept(this);
         }
+        methodVarTypes.get(node.getClassName()).put(currentMethod, varTypes);
     }
 
     @Override

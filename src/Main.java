@@ -54,7 +54,7 @@ public class Main {
         TypeChecker typeChecker = new TypeChecker();
         typeChecker.visit(ast);
 
-        CFGBuilder cfgBuilder = new CFGBuilder();
+        CFGBuilder cfgBuilder = new CFGBuilder(typeChecker.getFieldOffsets(), typeChecker.getMethodVarTypes());
         CFG cfg = cfgBuilder.build(ast);
         Dom.storeDominators(cfg);
 
