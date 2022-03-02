@@ -14,7 +14,6 @@ import visitor.ASTVisitor;
 public class CFGBuilder implements ASTVisitor {
     private int blockCount = 1;
     private boolean badField = false;
-    private boolean badMethod = false;
     private CFG cfg = new CFG();
     private Stack<BasicBlock> blocks = new Stack<>();
     private Stack<Primitive> primitives = new Stack<>();
@@ -87,13 +86,6 @@ public class CFGBuilder implements ASTVisitor {
         if (badField) {
             fail = new BasicBlock("badField", 0);
             fail.push(new IRFail("NoSuchField"));
-            fail.setFail();
-            cfg.add(fail);
-        }
-
-        if (badMethod) {
-            fail = new BasicBlock("badMethod", 0);
-            fail.push(new IRFail("NoSuchMethod"));
             fail.setFail();
             cfg.add(fail);
         }
@@ -293,13 +285,6 @@ public class CFGBuilder implements ASTVisitor {
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, getElt);
         blocks.peek().push(ir);
-
-        ifBranchName = "l" + blockCount++;
-        c = new ControlCond(tempVar, ifBranchName, "badMethod");
-        blocks.peek().setControlStmt(c);
-        cfg.add(blocks.pop());
-        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
-        badMethod = true;
 
         CallPrimitive call = new CallPrimitive(tempVar, caller);
         for (ASTExpr e : node.getArgs()) {
