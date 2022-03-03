@@ -300,7 +300,7 @@ public class ValueNumbering implements CFGVisitor {
 
     @Override
     public void visit(ControlCond node) {
-        if (VN.containsKey(node.getCond())) {
+        if (VN.containsKey(node.getCond()) && !(VN.get(node.getCond()) instanceof AllocPrimitive)) {
             node.setCond(VN.get(node.getCond()));
         }
         Primitive one = new IntPrimitive(1);

@@ -9,9 +9,11 @@ import ast.expr.*;
 import ast.stmt.*;
 import cfg.primitives.*;
 import cfg.stmt.*;
+import types.TypeChecker;
 import visitor.ASTVisitor;
 
 public class CFGBuilder implements ASTVisitor {
+    private boolean notAPointer = false;
     private String currClass = "";
     private String currMethod = "";
     private int blockCount = 1;
@@ -21,23 +23,32 @@ public class CFGBuilder implements ASTVisitor {
     private ArrayList<String> methodNames;
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
-    private HashMap<String, HashMap<String, Integer>> fieldOffsets = new HashMap<>();
-    HashMap<String, HashMap<String, HashMap<String, String>>> methodVarTypes = new HashMap<>();
+    private HashMap<Primitive, String> primitiveTypes = new HashMap<>();
+    private TypeChecker typeChecker;
     private Primitive assignedVar = null;
 
-    public CFGBuilder(HashMap<String, HashMap<String, Integer>> fieldOffsets,
-            HashMap<String, HashMap<String, HashMap<String, String>>> methodVarTypes) {
-        this.fieldOffsets = fieldOffsets;
-        this.methodVarTypes = methodVarTypes;
+    public CFGBuilder(TypeChecker typeChecker) {
+        this.typeChecker = typeChecker;
     }
 
     public CFG build(AST ast) {
         visit(ast);
         connectBlocks();
+        addFailBlocks();
         cfg.resetVars();
         cfg.resetFuncBlocks();
         cfg.incrNumFuncs();
         return cfg;
+    }
+
+    private void addFailBlocks() {
+        BasicBlock fail;
+        if (notAPointer) {
+            fail = new BasicBlock("isNullPointer", 0);
+            fail.push(new IRFail("NotAPointer"));
+            fail.setFail();
+            cfg.add(fail);
+        }
     }
 
     @Override
@@ -122,8 +133,15 @@ public class CFGBuilder implements ASTVisitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
 
-        String type = methodVarTypes.get(currClass).get(currMethod).get(caller.getName());
-        int offset = fieldOffsets.get(type).get(node.getName());
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(caller, ifBranchName, "isNullPointer");
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
+        notAPointer = true;
+
+        String type = primitiveTypes.get(caller);
+        int offset = typeChecker.getFieldOffset(type, node.getName());
         arith = new ArithPrimitive("+");
         arith.setOperand2(new IntPrimitive(8 * offset));
         arith.setOperand1(caller);
@@ -250,8 +268,15 @@ public class CFGBuilder implements ASTVisitor {
 
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
-        LoadPrimitive load = new LoadPrimitive(caller);
 
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(caller, ifBranchName, "isNullPointer");
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
+        notAPointer = true;
+
+        LoadPrimitive load = new LoadPrimitive(caller);
         tempVar = cfg.getNextTemp();
         ir = new IREqual(tempVar, load);
         blocks.peek().push(ir);
@@ -280,6 +305,9 @@ public class CFGBuilder implements ASTVisitor {
         ir = new IREqual(returnVar, call);
         blocks.peek().push(ir);
 
+        String callerType = primitiveTypes.get(caller);
+        String methodType = typeChecker.getTypeOfMethod(callerType, node.getName());
+        primitiveTypes.put(returnVar, methodType);
         primitives.push(returnVar);
     }
 
@@ -296,6 +324,13 @@ public class CFGBuilder implements ASTVisitor {
         node.getCaller().accept(this);
         Primitive caller = primitives.pop();
 
+        String ifBranchName = "l" + blockCount++;
+        ControlStmt c = new ControlCond(caller, ifBranchName, "isNullPointer");
+        blocks.peek().setControlStmt(c);
+        cfg.add(blocks.pop());
+        blocks.push(new BasicBlock(ifBranchName, blockCount - 1));
+        notAPointer = true;
+
         if (returnVar == null && primitives.size() == 0) {
             returnVar = cfg.getNextTemp();
         } else if (returnVar == null && primitives.peek() instanceof VarPrimitive) {
@@ -304,11 +339,15 @@ public class CFGBuilder implements ASTVisitor {
             returnVar = primitives.pop();
         }
 
-        String type = methodVarTypes.get(currClass).get(currMethod).get(caller.getName());
-        int offset = fieldOffsets.get(type).get(node.getName());
+        String type = primitiveTypes.get(caller);
+        int offset = typeChecker.getFieldOffset(type, node.getName());
         GetEltPrimitive getElt = new GetEltPrimitive(caller, new IntPrimitive(offset));
         ir = new IREqual(returnVar, getElt);
         blocks.peek().push(ir);
+
+        String methodType = typeChecker.getTypeOfField(type, node.getName());
+        primitiveTypes.put(returnVar, methodType);
+
         primitives.push(returnVar);
     }
 
@@ -331,6 +370,8 @@ public class CFGBuilder implements ASTVisitor {
         StorePrimitive store = new StorePrimitive(returnVar, global);
         ir = new IREqual(null, store);
         blocks.peek().push(ir);
+
+        primitiveTypes.put(returnVar, node.getName());
 
         primitives.push(returnVar);
     }
@@ -368,6 +409,9 @@ public class CFGBuilder implements ASTVisitor {
         }
         IREqual ir = new IREqual(returnVar, returnVal);
         blocks.peek().push(ir);
+
+        primitiveTypes.put(returnVar, "int");
+
         primitives.push(returnVar);
     }
 
@@ -421,18 +465,24 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(IntExpr node) {
-        primitives.push(new IntPrimitive(node.getValue()));
+        IntPrimitive i = new IntPrimitive(node.getValue());
+        primitiveTypes.put(i, "int");
+        primitives.push(i);
     }
 
     @Override
     public void visit(VarExpr node) {
-        primitives.push(new VarPrimitive(node.getName()));
+        VarPrimitive v = new VarPrimitive(node.getName());
+        String type = typeChecker.getTypeOfVar(currClass, currMethod, v.getName());
+        primitiveTypes.put(v, type);
+        primitives.push(v);
         cfg.addVar(node.getName());
     }
 
     @Override
     public void visit(ThisExpr node) {
         ThisPrimitive t = new ThisPrimitive();
+        primitiveTypes.put(t, currClass);
         primitives.push(t);
     }
 

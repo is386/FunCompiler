@@ -23,12 +23,20 @@ public class TypeChecker implements ASTVisitor {
     private String currentClass = "";
     private String currentMethod = "";
 
-    public HashMap<String, HashMap<String, Integer>> getFieldOffsets() {
-        return fieldOffsets;
+    public Integer getFieldOffset(String type, String field) {
+        return fieldOffsets.get(type).get(field);
     }
 
-    public HashMap<String, HashMap<String, HashMap<String, String>>> getMethodVarTypes() {
-        return methodVarTypes;
+    public String getTypeOfVar(String clas, String method, String var) {
+        return methodVarTypes.get(clas).get(method).get(var);
+    }
+
+    public String getTypeOfMethod(String clas, String method) {
+        return methodReturnTypes.get(clas).get(method);
+    }
+
+    public String getTypeOfField(String clas, String method) {
+        return fieldTypes.get(clas).get(method);
     }
 
     @Override

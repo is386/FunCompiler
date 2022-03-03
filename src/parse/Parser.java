@@ -351,7 +351,12 @@ public class Parser {
         line = line.stripLeading();
         ParsePair pair = parseExpr(line);
         ASTExpr caller = pair.getNode();
-        String[] parts = parseVar(pair.getLine().substring(1));
+        String[] parts;
+        if (!pair.getLine().startsWith(".")) {
+            parts = parseVar(pair.getLine().substring(2));
+        } else {
+            parts = parseVar(pair.getLine().substring(1));
+        }
         FieldExpr field = new FieldExpr(parts[0], caller);
         return new ParsePair(field, parts[1]);
     }
