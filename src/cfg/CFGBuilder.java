@@ -24,6 +24,7 @@ public class CFGBuilder implements ASTVisitor {
     private ArrayList<MethodDecl> methods = new ArrayList<>();
     private HashMap<String, Integer> fieldCounts = new HashMap<>();
     private HashMap<Primitive, String> primitiveTypes = new HashMap<>();
+    private HashMap<String, ClassDecl> classes = new HashMap<>();
     private TypeChecker typeChecker;
     private Primitive assignedVar = null;
 
@@ -353,8 +354,19 @@ public class CFGBuilder implements ASTVisitor {
 
     @Override
     public void visit(ClassExpr node) {
-        int allocSpace = fieldCounts.get(node.getName());
-        AllocPrimitive alloc = new AllocPrimitive(allocSpace + 1);
+        int numFields = fieldCounts.get(node.getName());
+        AllocPrimitive alloc = new AllocPrimitive(numFields + 4);
+
+        // Compute GC Map
+        long gcMap = 0;
+        ArrayList<TypedVarExpr> fields = classes.get(node.getName()).getFields();
+
+        for (TypedVarExpr f : fields) {
+            int offset = typeChecker.getFieldOffset(node.getName(), f.getName());
+            if (!f.getType().equals("int")) {
+                gcMap |= (1 << offset);
+            }
+        }
 
         Primitive returnVar = null;
         if (assignedVar != null) {
@@ -371,8 +383,20 @@ public class CFGBuilder implements ASTVisitor {
         ir = new IREqual(null, store);
         blocks.peek().push(ir);
 
-        primitiveTypes.put(returnVar, node.getName());
+        // Get address of slot -1
+        TempPrimitive temp = cfg.getNextTemp();
+        ArithPrimitive arith = new ArithPrimitive("-");
+        arith.setOperand2(new IntPrimitive(8));
+        arith.setOperand1(returnVar);
+        ir = new IREqual(temp, arith);
+        blocks.peek().push(ir);
 
+        // Store GC Map at slot -1
+        store = new StorePrimitive(temp, new IntPrimitive(gcMap));
+        ir = new IREqual(null, store);
+        blocks.peek().push(ir);
+
+        primitiveTypes.put(returnVar, node.getName());
         primitives.push(returnVar);
     }
 
@@ -426,7 +450,7 @@ public class CFGBuilder implements ASTVisitor {
                 vtable.add(0);
             }
         }
-
+        classes.put(node.getName(), node);
         IRData irVtable = new IRData("vtbl" + node.getName(), vtable);
         cfg.addToDataBlock(irVtable);
     }

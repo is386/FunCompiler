@@ -5,7 +5,7 @@ import visitor.CFGVisitor;
 public class IntPrimitive extends Primitive {
     private long value;
 
-    public IntPrimitive(int value) {
+    public IntPrimitive(long value) {
         this.value = value;
     }
 
